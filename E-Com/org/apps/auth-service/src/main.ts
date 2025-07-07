@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import { errorMiddleware } from '../../../packages/error-handler/error-middleware';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -9,6 +11,10 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
     credentials: true // Allow credentials (cookies, authorization headers, etc.))
 }));
+app.use(express.json()); // Parse JSON bodies
+app.use(cookieParser()); // Parse cookies
+
+app.use(errorMiddleware);
 
 const port = process.env.PORT ? Number(process.env.PORT) : 6001;
 
@@ -20,5 +26,5 @@ const server=app.listen(port, () => {
     console.log(`[ Auth service ready ] http://localhost:${port}`);
 });
 server.on('error', (err: Error) => {
-    console.error(`[ Auth service error ] ${err.message}`);
+    console.log(`[ Auth service error ] ${err}`);
 });
