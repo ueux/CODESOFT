@@ -4,11 +4,12 @@
   "license": "MIT",
   "scripts": {
     "dev": "npx nx run-many --target=serve --all",
-    "auth-docs":"node apps/auth-service/src/swagger.js"
+    "auth-docs": "node apps/auth-service/src/swagger.js"
   },
   "private": true,
   "dependencies": {
     "@prisma/client": "^6.11.1",
+    "@types/jsonwebtoken": "^9.0.10",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",

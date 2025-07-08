@@ -1,8 +1,10 @@
 import {Request, Response,NextFunction } from "express"
 import { checkOtpRestrictions, sendOtp, trackOtpRequest, validateRegistrationData, verifyOtp } from "../utils/auth.helper"
 import prisma from "../../../../packages/libs/prisma";
-import { ValidationError } from "../../../../packages/error-handler";
+import { AuthError, ValidationError } from "../../../../packages/error-handler";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { setCookies } from "../utils/cookies/setCookies";
 
 export const userRegistration = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -57,3 +59,43 @@ export const verifUser = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return next(new AuthError("Email and password are required!"));
+        }
+        const user = await prisma.users.findUnique({
+            where: { email }
+        });
+        const isPasswordValid = user && await bcrypt.compare(password, user.password!);
+        if (!user || !isPasswordValid) {
+            return next(new AuthError("Invalid email or password!"));
+        }
+        // Here you would typically generate a JWT token
+        const accessToken = jwt.sign(
+            { id: user.id, role: "user" },
+            process.env.ACCESS_TOKEN_SECRET as string,
+            { expiresIn: "15m" }
+        );
+        const refreshToken = jwt.sign(
+            { id: user.id, role: "user" },
+            process.env.REFRESH_TOKEN_SECRET as string,
+            { expiresIn: "7d" }
+        );
+        //store refresh and access token in an httpOnly cookie
+        setCookies(res, "accessToken", accessToken);
+        setCookies(res, "refreshToken", refreshToken);
+        res.status(200).json({
+            success: true,
+            message: "User logged in successfully!",
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+            }
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
