@@ -3,6 +3,7 @@ import { ValidationError } from "../../../../packages/error-handler";
 import { NextFunction } from "express";
 import redis from "../../../../packages/libs/redis";
 import { sendEmail } from "./sendMail";
+import prisma from "@packages/libs/prisma";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -67,5 +68,48 @@ export const verifyOtp = async (email: string, otp: string, next: NextFunction) 
         throw new ValidationError("Invalid OTP!");
     }
     await redis.del(`otp:${email}`, failedAttemptsKey); // Clear OTP and attempts after successful verification
+}
 
+export const handleForgotPassword = async (req: any, res: any, next: NextFunction, userType: "user" | "seller") => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return next(new ValidationError("Email is required!"));
+        }
+        if (!emailRegex.test(email)) {
+            return next(new ValidationError("Invalid email format!"));
+        }
+        const user = userType === "user" && await prisma.users.findUnique({ where: { email } });
+        if (!user) {
+            throw new ValidationError(`No ${userType} found with this email!`);
+        }
+        await checkOtpRestrictions(email, next);
+        await trackOtpRequest(email, next);
+        await sendOtp(user.name, email, `${userType}-forgot-password-mail`);
+        res.status(200).json({
+            message: `OTP sent to ${userType} email. Please verify your account`
+        });
+    } catch (error) {
+        return next(error);
+
+    }
+}
+
+export const verifyForgotPasswordOtp = async (req: any, res: any, next: NextFunction) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp ) {
+            throw new ValidationError("Enail and OTP are required!");
+        }
+        if (!emailRegex.test(email)) {
+            return next(new ValidationError("Invalid email format!"));
+        }
+        await verifyOtp(email, otp, next);
+        res.status(200).json({
+            success: true,
+            message: `OTP verified successfully! You can now reset your password.`
+        });
+    } catch (error) {
+        return next(error);
+    }
 }
