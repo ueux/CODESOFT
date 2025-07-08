@@ -1,7 +1,7 @@
 import {Request, Response,NextFunction } from "express"
 import { checkOtpRestrictions, sendOtp, trackOtpRequest, validateRegistrationData } from "../utils/auth.helper"
-import prisma from "@packages/libs/prisma";
-import { ValidationError } from "@packages/error-handler";
+import prisma from "../../../../packages/libs/prisma";
+import { ValidationError } from "../../../../packages/error-handler";
 
 export const userRegistration = async (req: Request, res: Response, next: NextFunction) => {
     try {
