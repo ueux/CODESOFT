@@ -7,8 +7,8 @@ import { sendEmail } from "./sendMail";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const validateRegistrationData = (data: any, userType: "user" | "seller") => {
-    const { name, email, passward, phone_number, country } = data;
-    if (!name || !email || !passward || (userType === "seller" && (!phone_number || !country))) {
+    const { name, email, password, phone_number, country } = data;
+    if (!name || !email || !password || (userType === "seller" && (!phone_number || !country))) {
         throw new ValidationError("Missing required fields!")
     }
     if (!emailRegex.test(email)) {
@@ -47,5 +47,25 @@ export const sendOtp = async (name: string, email: string, template: string) => 
     // Here you would typically send the OTP via email
     await redis.set(`otp:${email}`, otp, 'EX', 300); // Store OTP in Redis with a 5-minute expiration
     await redis.set(`otp_cooldown:${email}`, 'true', 'EX', 60); // Set a cooldown period of 1 minute
+
+}
+
+export const verifyOtp = async (email: string, otp: string, next: NextFunction) => {
+    const storedOtp = await redis.get(`otp:${email}`);
+    if (!storedOtp) {
+        throw new ValidationError("OTP expired or not found!");
+    }
+    const failedAttemptsKey = `otp_attempts:${email}`;
+    let failedOtpAttempts = parseInt((await redis.get(failedAttemptsKey)) || "0");
+    if (storedOtp !== otp) {
+        if (failedOtpAttempts >= 2) {
+            await redis.set(`otp_lock:${email}`, "locked", "EX", 1800); // Lock account for 30 minutes
+            await redis.del(`otp:${email}`,failedAttemptsKey); // Clear OTP after successful verification
+            throw new ValidationError("Account locked due to multiple failed OTP attempts. Please try again after 30 minutes");
+        }
+        await redis.set(failedAttemptsKey, failedOtpAttempts+1, 'EX', 300); // Store attempts for 5 minutes
+        throw new ValidationError("Invalid OTP!");
+    }
+    await redis.del(`otp:${email}`, failedAttemptsKey); // Clear OTP and attempts after successful verification
 
 }

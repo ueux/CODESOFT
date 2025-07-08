@@ -30,5 +30,4 @@ model users {
   following String[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  imageIds String @db.ObjectId
 }
