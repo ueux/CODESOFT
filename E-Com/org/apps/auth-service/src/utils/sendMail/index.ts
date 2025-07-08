@@ -6,9 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.example.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    service: process.env.SMTP_SERVICE || 'gmail',
+    service: process.env.SMTP_SERVICE,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
@@ -16,7 +14,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const renderEmailTemplate = async (templateName: string, data: Record<string,any>): Promise<string> => {
-    const templatePath = path.join(process.cwd(),"auth-service","src","utils","email-templates", `${templateName}.ejs`);
+    const templatePath = path.join(process.cwd(),"apps","auth-service","src","utils","email-templates", `${templateName}.ejs`);
     return ejs.renderFile(templatePath, data);
 }
 
