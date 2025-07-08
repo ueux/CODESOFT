@@ -37,11 +37,11 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.get('/gateway-health', (req, res) => {
   res.send({ message: 'Welcome to api-gateway!' });
-}); 
+});
 
 app.use("/", proxy("http://localhost:6001")); // Auth Service
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8000;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });

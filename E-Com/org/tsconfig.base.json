@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "composite": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "importHelpers": true,
@@ -16,6 +18,12 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["development"]
+    "baseUrl":".",
+    "customConditions": ["development"],
+    "paths":{
+      "@packages/*":[
+        "packages/*"
+      ]
+    }
   }
 }
