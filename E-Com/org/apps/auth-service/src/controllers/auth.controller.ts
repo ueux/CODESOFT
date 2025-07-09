@@ -3,7 +3,7 @@ import { checkOtpRestrictions, handleForgotPassword, sendOtp, trackOtpRequest, v
 import prisma from "../../../../packages/libs/prisma";
 import { AuthError, ValidationError } from "../../../../packages/error-handler";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { setCookies } from "../utils/cookies/setCookies";
 
 export const userRegistration = async (req: Request, res: Response, next: NextFunction) => {
@@ -136,5 +136,36 @@ export const resetUserPassword = async (req: Request, res: Response, next: NextF
         });
     } catch (error) {
         return next(error);
+    }
+}
+
+export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshToken) {
+            throw new ValidationError("Unauthorized! No refresh token.")
+        }
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string) as { id: string; role: string };
+        if (!decoded || !decoded.id || !decoded.role) {
+            return new JsonWebTokenError("Forbidden! Invailid refresh token.")
+        }
+        const user=await prisma.users.findUnique({ where: { id: decoded.id } })
+if (!user) {
+            throw new AuthError("Forbidden! User/Seller not found.")
+        }
+        const newAccessToken = jwt.sign({ id: decoded.id, role: decoded.role }, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15m" })
+        setCookies(res, "accessToken", newAccessToken)
+        return res.status(201).json({success:true})
+    } catch (error) {
+        return next(error)
+    }
+}
+
+export const getUser = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const user = req.user;
+        res.status(201).json({success:true,user})
+    } catch (error) {
+next(error)
     }
 }

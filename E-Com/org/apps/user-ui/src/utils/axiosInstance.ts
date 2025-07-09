@@ -6,7 +6,7 @@ const axiosInstance = axios.create({
 })
 
 let isRefreshing = false;
-let refreshSubscribers: (() => void)[] = []
+let refreshSubscribers: (() => void)[] = []  //stores failed requests
 
 const handleLogout = ()=> {
     if (window.location.pathname !== "/login") {
@@ -28,7 +28,7 @@ axiosInstance.interceptors.request.use(
     (error)=>Promise.reject(error)
 )
 
-axiosInstance.interceptors.request.use(
+axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
@@ -53,3 +53,5 @@ axiosInstance.interceptors.request.use(
         return Promise.reject(error)
     }
 )
+
+export default axiosInstance
