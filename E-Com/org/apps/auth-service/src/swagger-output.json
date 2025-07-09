@@ -6,12 +6,12 @@
     "version": "1.0.0"
   },
   "host": "localhost:6001",
-  "basePath": "/api",
+  "basePath": "/",
   "schemes": [
     "http"
   ],
   "paths": {
-    "/user-registreation": {
+    "/user-registration": {
       "post": {
         "description": "",
         "parameters": [
