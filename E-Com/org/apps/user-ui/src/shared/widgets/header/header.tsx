@@ -48,7 +48,7 @@ const Header = () => {
             <Link href={"/cart"} className="relative">
               <CartIcon className="w-7 h-7 text-gray-700  " />
               <div className="w-5 h-5 bg-red-500 rounded-full absolute top-[-10px] right-[-10px]  flex items-center justify-center">
-                <span className="text-white text-xs font-semibold">9+</span>
+                <span className="text-white text-xs font-semibold">0</span>
               </div>
             </Link>
           </div>

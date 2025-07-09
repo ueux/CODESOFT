@@ -10,6 +10,7 @@
   "private": true,
   "dependencies": {
     "@prisma/client": "^6.11.1",
+    "@tanstack/react-query": "^5.81.5",
     "@types/jsonwebtoken": "^9.0.10",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
@@ -29,6 +30,7 @@
     "prisma": "^6.11.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-hook-form": "^7.60.0",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1"
   },
@@ -37,7 +39,7 @@
     "@nx/express": "^21.2.2",
     "@nx/jest": "21.2.2",
     "@nx/js": "21.2.2",
-    "@nx/next": "^21.2.2",
+    "@nx/next": "^21.2.1",
     "@nx/node": "21.2.2",
     "@nx/web": "21.2.2",
     "@nx/webpack": "21.2.2",

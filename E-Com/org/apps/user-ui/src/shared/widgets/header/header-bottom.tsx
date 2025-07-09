@@ -85,6 +85,12 @@ const ContactIcon = (props: React.SVGProps<SVGSVGElement>) => (
     />
   </svg>
 );
+const NavItem = ({ href, icon: Icon, label }: { href: string; icon: any; label: string }) => (
+  <Link href={href} className="flex items-center gap-2 hover:text-blue-600 transition">
+    <Icon className="w-5 h-5" />
+    {label}
+  </Link>
+);
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
@@ -130,29 +136,12 @@ const HeaderBottom = () => {
         </div>
         {/*Dropdown Menu*/}
         {show && (
-          <div className={`absolute left-0 ${isSticky? "top-[70px]":"top-[50px]"}  w-[260px] h[400px] bg-[#f5f5f5] `}>
-            <ul className="p-2">
-              <li className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer">
-                <HomeIcon className="w-5 h-5" />
-                Home
-              </li>
-              <li className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer">
-                <InfoIcon className="w-5 h-5" />
-                About Us
-              </li>
-              <li className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer">
-                <ServiceIcon className="w-5 h-5" />
-                Services
-              </li>
-              <li className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer">
-                <BlogIcon className="w-5 h-5" />
-                Blog
-              </li>
-              <li className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer">
-                <ContactIcon className="w-5 h-5" />
-                Contact Us
-              </li>
-            </ul>
+          <div className={`absolute left-0 ${isSticky ? "top-[70px]" : "top-[50px]"}  w-[260px] h[400px] bg-[#f5f5f5] `}>
+             <NavItem href="/" icon={HomeIcon} label="Home" />
+        <NavItem href="/about" icon={InfoIcon} label="About" />
+        <NavItem href="/services" icon={ServiceIcon} label="Services" />
+        <NavItem href="/blog" icon={BlogIcon} label="Blog" />
+        <NavItem href="/contact" icon={ContactIcon} label="Contact" />
           </div>
         )}
         {/*Navigation Links*/}
@@ -162,6 +151,7 @@ const HeaderBottom = () => {
                 {item.title}
             </Link>
           ))}
+
         </div>
         <div>
           {isSticky && (
@@ -188,7 +178,7 @@ const HeaderBottom = () => {
             <Link href={"/cart"} className="relative">
               <CartIcon className="w-7 h-7 text-gray-700  " />
               <div className="w-5 h-5 bg-red-500 rounded-full absolute top-[-10px] right-[-10px]  flex items-center justify-center">
-                <span className="text-white text-xs font-semibold">9+</span>
+                <span className="text-white text-xs font-semibold">0</span>
               </div>
             </Link>
               </div>
