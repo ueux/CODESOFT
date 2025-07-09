@@ -42,7 +42,7 @@ const Signup = () => {
     const signupMutation=useMutation({
         mutationFn: async (data: FormData) => {
             const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-registration`, data);
-            console.log(response)
+
             return response.data;
         },
         onSuccess: (_, formData) => {
@@ -79,11 +79,9 @@ const Signup = () => {
         }
     };
     const resendOtp = () => {
-        setCanResend(false);
-        setTimer(60);
-        setTimeout(() => {
-            setCanResend(true);
-        }, 60000);
+        if (userData) {
+            signupMutation.mutate(userData)
+        }
         // Here you would typically call your API to resend the OTP
     };
   return (
@@ -101,7 +99,7 @@ const Signup = () => {
                 </h3>
                 <p className="text-center text-grey-500 mb-4">
                     Already have an account?{" "}
-                    <Link href="/signup" className="text-blue-500 hover:underline">
+                    <Link href="/login" className="text-blue-500 hover:underline">
                         Login
                     </Link>
                 </p>
@@ -152,6 +150,8 @@ const Signup = () => {
                                 type="text"
                                 maxLength={1}
                                 value={value}
+                                placeholder={`${index + 1}`}
+                                title={`OTP digit ${index + 1}`}
                                 onChange={(e) => handleOtpChange(index,e.target.value)}
                                 onKeyDown={(e) => handleOtpKeyDown(e, index)}
                                 ref={(el) => { if (el) inputRefs.current[index] = el}}

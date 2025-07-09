@@ -71,7 +71,7 @@
         }
       }
     },
-    "/lohin-user": {
+    "/login-user": {
       "post": {
         "description": "",
         "parameters": [
