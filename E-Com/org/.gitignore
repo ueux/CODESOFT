@@ -8,6 +8,14 @@ out-tsc
 # dependencies
 node_modules
 
+# === ENVIRONMENT FILES ===
+.env
+.env.*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+./env
 
 # IDEs and editors
 /.idea
@@ -51,115 +59,3 @@ test-output
 # Next.js
 .next
 out
-
-# === OUTPUT DIRECTORIES ===
-dist
-tmp
-out-tsc
-build
-out
-.cache
-.next
-.next.cache
-test-output
-public/build
-coverage
-generated
-.generated
-/generated/prisma
-
-# === DEPENDENCIES ===
-node_modules/
-.pnp
-.pnp.js
-
-# === ENVIRONMENT FILES ===
-.env
-.env.*.local
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-./env
-
-# === IDEs and TEXT EDITORS ===
-.idea/
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-*.sublime-project
-*.sublime-workspace
-*.code-workspace
-*.sw?
-*.bak
-*.tmp
-*.temp
-
-# === SYSTEM FILES ===
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-.Trashes
-
-# === LOG FILES ===
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# === TEST + LINT ===
-/coverage
-testem.log
-/junit.xml
-*.lcov
-.eslintcache
-.prettiercache
-stylelintcache
-
-# === NX AND TURBO REPOS ===
-.nx/cache
-.nx/workspace-data
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
-.turbo
-turbo.json
-
-# === TYPESCRIPT ===
-*.tsbuildinfo
-tsconfig.tsbuildinfo
-
-# === DOCKER ===
-Dockerfile
-docker-compose.yml
-docker-compose.override.yml
-.dockerignore
-
-# === MONOREPO (NX/YARN/PNPM/LERNA) ===
-lerna-debug.log
-.pnpm-debug.log
-.yarn-integrity
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.yarn/patches
-.yarn/releases
-
-# === BUNDLE TRACKERS ===
-stats.json
-bundle-report.html
-
-# === FIREBASE/VERCEL/NEXT BUILD ===
-.firebase/
-.vercel/
-.now/
-
-# === JEST ===
-jest-cache/
-jest-config/
-jest-test-results.json
