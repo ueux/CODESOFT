@@ -7,6 +7,7 @@ import React, {  useState } from "react";
 import { useForm } from "react-hook-form";
 import axios,{AxiosError} from "axios";
 import { countries } from "apps/seller-ui/src/utils/countries";
+import CreateShop from "apps/seller-ui/src/shared/modules/auth/create-shop";
 
 
 const Signup = () => {
@@ -16,8 +17,9 @@ const Signup = () => {
     const [canResend, setCanResend] = useState<boolean>(true);
     const [timer, setTimer] = useState<number>(60);
     const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
-    const [userData, setUserData] = useState<FormData | null>(null);
+    const [sellerData, setSellerData] = useState<FormData | null>(null);
     const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+    const [sellerId ,setSellerId]=useState("")
     const startResendTimer = () => {
         const interval = setInterval(() => {
             setTimer((prev) => {
@@ -38,12 +40,11 @@ const Signup = () => {
     } = useForm();
     const signupMutation=useMutation({
         mutationFn: async (data: FormData) => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-registration`, data);
-
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/seller-registration`, data)
             return response.data;
         },
         onSuccess: (_, formData) => {
-            setUserData(formData);
+            setSellerData(formData);
             setShowOtp(true);
             setCanResend(false);
             setTimer(60);
@@ -53,12 +54,13 @@ const Signup = () => {
     const onSubmit = async (data: any) => { signupMutation.mutate(data) };
     const verifyOtpMutation = useMutation({
         mutationFn: async () => {
-            if (!userData) return;
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-user`, { ...userData, otp: otp.join("") });
+            if (!sellerData) return;
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-seller`, { ...sellerData, otp: otp.join("") });
             return response.data;
         },
-        onSuccess: () => {
-            router.push("/login")
+        onSuccess: (data) => {
+            setSellerId(data.seller.id)
+            setActiveStep(2)
         }
     })
     const handleOtpChange = (index: number, value: string) => {
@@ -76,8 +78,8 @@ const Signup = () => {
         }
     };
     const resendOtp = () => {
-        if (userData) {
-            signupMutation.mutate(userData)
+        if (sellerData) {
+            signupMutation.mutate(sellerData)
         }
         // Here you would typically call your API to resend the OTP
     };
@@ -196,6 +198,9 @@ const Signup = () => {
                 )}
                   </>
               )}
+              {activeStep === 2 && (<>
+                  <CreateShop/>
+              </>)}
           </div>
     </div>
   );

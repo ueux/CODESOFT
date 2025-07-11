@@ -79,7 +79,7 @@ export const handleForgotPassword = async (req: any, res: any, next: NextFunctio
         if (!emailRegex.test(email)) {
             return next(new ValidationError("Invalid email format!"));
         }
-        const user = userType === "user" && await prisma.users.findUnique({ where: { email } });
+        const user = userType === "user" ? await prisma.users.findUnique({ where: { email } }): await prisma.sellers.findUnique({ where: { email } });
         if (!user) {
             throw new ValidationError(`No ${userType} found with this email!`);
         }
