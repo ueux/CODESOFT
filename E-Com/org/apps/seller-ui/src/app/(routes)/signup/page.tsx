@@ -2,7 +2,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import React, {  useState } from "react";
 import { useForm } from "react-hook-form";
 import axios,{AxiosError} from "axios";
@@ -12,7 +11,7 @@ import StripeLogo from "apps/seller-ui/src/assets/svgs/stripeLogo";
 
 
 const Signup = () => {
-    const [activeStep, setActiveStep] = useState<number>(3);
+    const [activeStep, setActiveStep] = useState<number>(1);
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
     const [showOtp, setShowOtp] = useState<boolean>(false);
     const [canResend, setCanResend] = useState<boolean>(true);
@@ -33,7 +32,6 @@ const Signup = () => {
             })
         },1000)
     }
-  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -216,7 +214,7 @@ const Signup = () => {
                   <div className="text-center">
                       <h3 className="text-2xl font-semibold">Withdraw Method</h3>
                       <br />
-                      <button onClick={connectStripe} className="w-full m-auto flex items-center justify-center gap-3 text-lg bg-[#334155] text-white py-2 rounded-lg">Connect Stripe <StripeLogo /></button>
+                      <button onClick={connectStripe} className="w-full m-auto font-semibold text-[#5167fc] flex items-center justify-center gap-3 text-lg bg-[#334155] py-2 rounded-lg">Connect<StripeLogo /></button>
                   </div>
               </>)}
           </div>

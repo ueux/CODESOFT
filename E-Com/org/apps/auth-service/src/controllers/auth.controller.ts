@@ -5,6 +5,9 @@ import { AuthError, ValidationError } from "../../../../packages/error-handler";
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { setCookies } from "../utils/cookies/setCookies";
+import { Stripe } from "stripe"
+
+const stripe=new Stripe(process.env.STRIPE_SECRET_KEY!,{apiVersion:"2025-06-30.basil",})
 
 export const userRegistration = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -242,3 +245,81 @@ export const createShop = async (req: Request, res: Response, next: NextFunction
     }
 }
 
+export const createStripeConnectLink = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { sellerId } = req.body
+        if (!sellerId) return next(new ValidationError("Seller ID is required!"))
+        const seller = await prisma.sellers.findUnique({ where: { id: sellerId } })
+        if (!seller) return next(new ValidationError("Seller is not available with this id!"))
+        const account = await stripe.accounts.create({
+            type: "express",
+            email: seller?.email,
+            country: "GB",
+            capabilities: {
+                card_payments: { requested: true },
+                transfers:{requested:true}
+            }
+        })
+        await prisma.sellers.update({ where: { id: sellerId }, data: { stripeId: account.id } })
+        const accountLink = await stripe.accountLinks.create({
+            account: account.id,
+            refresh_url: `http://localhost:3000/success`,
+            return_url: `http://localhost:3000/success`,
+            type:"account_onboarding"
+        })
+        res.json({url:accountLink.url})
+
+    } catch (error) {
+        return next(error)
+    }
+}
+
+export const loginSeller = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return next(new ValidationError("Email and password are required!"));
+        }
+        const seller = await prisma.users.findUnique({
+            where: { email }
+        });
+        const isPasswordValid = seller && await bcrypt.compare(password, seller.password!);
+        if (!seller || !isPasswordValid) {
+            return next(new AuthError("Invalid email or password!"));
+        }
+        // Here you would typically generate a JWT token
+        const accessToken = jwt.sign(
+            { id: seller.id, role: "seller" },
+            process.env.ACCESS_TOKEN_SECRET as string,
+            { expiresIn: "15m" }
+        );
+        const refreshToken = jwt.sign(
+            { id: seller.id, role: "seller" },
+            process.env.REFRESH_TOKEN_SECRET as string,
+            { expiresIn: "7d" }
+        );
+        //store refresh and access token in an httpOnly cookie
+        setCookies(res, "sellerAccessToken", accessToken);
+        setCookies(res, "sellerRefreshToken", refreshToken);
+        res.status(200).json({
+            success: true,
+            message: "Seller logged in successfully!",
+            user: {
+                id: seller.id,
+                name: seller.name,
+                email: seller.email,
+            }
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export const getSeller = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const seller = req.seller;
+        res.status(201).json({success:true,seller})
+    } catch (error) {
+next(error)
+    }
+}
