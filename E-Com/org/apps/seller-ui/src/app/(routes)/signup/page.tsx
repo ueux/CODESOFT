@@ -11,7 +11,7 @@ import CreateShop from "apps/seller-ui/src/shared/modules/auth/create-shop";
 
 
 const Signup = () => {
-    const [activeStep, setActiveStep] = useState<number>(1);
+    const [activeStep, setActiveStep] = useState<number>(2);
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
     const [showOtp, setShowOtp] = useState<boolean>(false);
     const [canResend, setCanResend] = useState<boolean>(true);
@@ -199,7 +199,7 @@ const Signup = () => {
                   </>
               )}
               {activeStep === 2 && (<>
-                  <CreateShop/>
+                  <CreateShop sellerId={sellerId} setActiveStep={setActiveStep} />
               </>)}
           </div>
     </div>
