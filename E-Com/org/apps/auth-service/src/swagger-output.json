@@ -145,9 +145,16 @@
         }
       }
     },
-    "/refresh-token-user": {
+    "/refresh-token": {
       "post": {
         "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
         "responses": {
           "201": {
             "description": "Created"
@@ -325,7 +332,7 @@
       }
     },
     "/logged-in-seller": {
-      "post": {
+      "get": {
         "description": "",
         "responses": {
           "201": {

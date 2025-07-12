@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 const CreateShop = ({ sellerId, setActiveStep }: { sellerId: string, setActiveStep: (step: number) => void }) => {
     const { register, handleSubmit, formState: { errors } }=useForm();
     const shopCreateMutation = useMutation({
-        mutationFn: async (data: FormData) => {
+      mutationFn: async (data: FormData) => {
             const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-shop`, data)
             return response.data;
         }, onSuccess: () => {
@@ -39,7 +39,7 @@ const CreateShop = ({ sellerId, setActiveStep }: { sellerId: string, setActiveSt
               <input type="text" placeholder="e.g., Mon-Fri 9AM-6PM" className="w-full p-2 border border-gray-300 rounded-[4px] mb-1 outline-0 focus:outline-none focus:ring-2 focus:ring-blue-500" {...register("opening_hours", { required: "Opening Hours is required", })} />
                 {errors.opening_hours && (<p className="text-red-500 text-sm">{String(errors.opening_hours.message)}</p>)}
 <label className="block mb-1 text-gray-700">Website </label>
-              <input type="url" placeholder="https://example.com" className="w-full p-2 border border-gray-300 rounded-[4px] mb-1 outline-0 focus:outline-none focus:ring-2 focus:ring-blue-500" {...register("website", { pattern:{value:/^(https?:\/\/)?([\w\d-]+\.)+w{2,}(\/.*)?$/, message:"Enter a valid URL"}})} />
+              <input type="url" placeholder="https://example.com" className="w-full p-2 border border-gray-300 rounded-[4px] mb-1 outline-0 focus:outline-none focus:ring-2 focus:ring-blue-500" {...register("website", { pattern:{value:/^(https?:\/\/)?([\w\d-]+\.)+\w{2,}(\/.*)?$/, message:"Enter a valid URL"}})} />
                 {errors.website && (<p className="text-red-500 text-sm">{String(errors.website.message)}</p>)}
 <label className="block mb-1 text-gray-700">Category </label>
                 <select className="w-full p-2 border border-gray-300 rounded-[4px] mb-1 outline-0 focus:outline-none focus:ring-2 focus:ring-blue-500" {...register("category", { required: "Category is required" })}>

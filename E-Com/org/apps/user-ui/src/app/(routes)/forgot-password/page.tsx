@@ -41,7 +41,6 @@ const ForgotPassword = () => {
 const requestOtpMutation=useMutation({
         mutationFn: async ({email}:{email:string}) => {
     const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/forgot-password-user`, { email });
-        console.log(response)
             return response.data;
         },
         onSuccess: (_, {email}) => {

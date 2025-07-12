@@ -3,7 +3,8 @@ import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken"
 const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const token = req.cookies.accessToken||req.cookies.sellerAccessToken || req.header.authorization?.split(" ")[1];
+        const token = req.cookies.accessToken || req.cookies.sellerAccessToken || req.header.authorization?.split(" ")[1];
+
         if (!token) {
             return res.status(401).json({ message: "Unauthorized! Token missing" })
         }

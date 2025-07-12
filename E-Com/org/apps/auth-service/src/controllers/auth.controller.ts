@@ -75,6 +75,9 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         if (!user || !isPasswordValid) {
             return next(new AuthError("Invalid email or password!"));
         }
+
+        res.clearCookie("sellerAccessToken")
+        res.clearCookie("sellerRefreshToken")
         // Here you would typically generate a JWT token
         const accessToken = jwt.sign(
             { id: user.id, role: "user" },
@@ -142,9 +145,9 @@ export const resetUserPassword = async (req: Request, res: Response, next: NextF
     }
 }
 
-export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+export const refreshToken = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies.refreshToken || req.cookies.sellerRefreshToken || req.headers['authorization']?.split(" ")[1];
         if (!refreshToken) {
             throw new ValidationError("Unauthorized! No refresh token.")
         }
@@ -152,12 +155,25 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
         if (!decoded || !decoded.id || !decoded.role) {
             return new JsonWebTokenError("Forbidden! Invailid refresh token.")
         }
-        const user=await prisma.users.findUnique({ where: { id: decoded.id } })
-if (!user) {
+        let account;
+        if (decoded.role === "user") {
+            account = await prisma.users.findUnique({ where: { id: decoded.id } })
+        } else if (decoded.role === "seller") {
+            account = await prisma.sellers.findUnique({ where: { id: decoded.id }, include: { shop: true } })
+        }
+
+if (!account) {
             throw new AuthError("Forbidden! User/Seller not found.")
         }
         const newAccessToken = jwt.sign({ id: decoded.id, role: decoded.role }, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15m" })
-        setCookies(res, "accessToken", newAccessToken)
+
+        if (decoded.role === "user") {
+            setCookies(res, "accessToken", newAccessToken)
+        } else if (decoded.role === "seller") {
+            setCookies(res, "sellerAccessToken", newAccessToken)
+        }
+        req.role=decoded.role
+
         return res.status(201).json({success:true})
     } catch (error) {
         return next(error)
@@ -207,7 +223,7 @@ export const verifySeller = async (req: Request, res: Response, next: NextFuncti
         }
         await verifyOtp(email, otp, next)
         const hashedPassword = await bcrypt.hash(password, 10);
-        await prisma.sellers.create({
+        const seller=await prisma.sellers.create({
             data: {
                 name,
                 email,
@@ -217,7 +233,7 @@ export const verifySeller = async (req: Request, res: Response, next: NextFuncti
             }
         });
         res.status(201).json({
-            success: true,
+            seller,
             message: "Seller registered successfully!"
         });
     } catch (error) {
@@ -280,13 +296,15 @@ export const loginSeller = async (req: Request, res: Response, next: NextFunctio
         if (!email || !password) {
             return next(new ValidationError("Email and password are required!"));
         }
-        const seller = await prisma.users.findUnique({
+        const seller = await prisma.sellers.findUnique({
             where: { email }
         });
         const isPasswordValid = seller && await bcrypt.compare(password, seller.password!);
         if (!seller || !isPasswordValid) {
             return next(new AuthError("Invalid email or password!"));
         }
+        res.clearCookie("accessToken")
+        res.clearCookie("refreshToken")
         // Here you would typically generate a JWT token
         const accessToken = jwt.sign(
             { id: seller.id, role: "seller" },
