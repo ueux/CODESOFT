@@ -46,7 +46,7 @@ const SidebarBarWrapper = () => {
             </SidebarMenu>
             <SidebarMenu title="Products">
               <SidebarItem title='Create Product' icon={<SquarePlus color={getIconColor("/dashboard/create-product")} size={24} />} isActive={activeSidebar === "/dashboard/create-product"} href='/dashboard/create-product' />
-              <SidebarItem title='All Products'  icon={<PackageSearch fill={getIconColor("/dashboard/all-product")} size={22} />} isActive={activeSidebar === "/dashboard/all-product"} href='/dashboard/all-product' />
+              <SidebarItem title='All Products'  icon={<PackageSearch fill={getIconColor("/dashboard/all-products")} size={22} />} isActive={activeSidebar === "/dashboard/all-products"} href='/dashboard/all-products' />
             </SidebarMenu>
             <SidebarMenu title="Events">
               <SidebarItem title='Create Event' icon={<CalendarPlus color={getIconColor("/dashboard/create-event")} size={24} />} isActive={activeSidebar === "/dashboard/create-event"} href='/dashboard/create-event' />
