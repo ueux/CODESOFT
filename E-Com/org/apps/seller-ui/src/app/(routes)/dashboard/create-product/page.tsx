@@ -1,46 +1,103 @@
 'use client'
+import { useQuery } from '@tanstack/react-query'
 import ImagePlaceholder from 'apps/seller-ui/src/shared/components/image-placeholder'
+import RichTextEditor from 'apps/seller-ui/src/shared/components/rich-text-editor'
+import SizeSelector from 'apps/seller-ui/src/shared/components/size-selector'
+import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
 import { ChevronRight } from 'lucide-react'
 import ColorSelector from 'packages/components/color-selector'
+import CustomProperties from 'packages/components/custom-properties'
 import CustomSpecifications from 'packages/components/custom-specifications'
 import Input from 'packages/components/input'
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import React, { useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 
 const CreateProduct = () => {
     const { register, control, watch, setValue, handleSubmit, formState: { errors } } = useForm()
     const [openImageModal, setOpenImageModal] = useState(false)
     const [isChanged, setIsChanged] = useState(false)
     const [images, setImages] = useState<(File | null)[]>([null])
-    const [loading, isLoading] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const { data,isLoading,isError} = useQuery({
+        queryKey: ["categories"],
+        queryFn: async () => {
+            try {
+                const res = await axiosInstance.get("/product/api/get-categories")
+                return res.data
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        staleTime: 1000 * 60 * 5,
+        retry:2
+    })
+     const {
+    data: discountCodes = [],
+    isLoading:discountLoading,
+  } = useQuery({
+    queryKey: ["shop-discounts"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/product/api/get-discount-codes")
+      return res?.data?.discount_codes || []
+    }
+  })
+    const categories=data?.categories||[]
+    const subCategoriesData = data?.subCategories || {}
 
-    const handleImageChange = (file: File | null, index: number) => {
-        const updateImages = [...images]
-        updateImages[index] = file;
-        if (index === images.length - 1 && images.length < 8) {
-            updateImages.push(null)
+    const selectedCategory = watch("category")
+
+    const subCategories = useMemo(()=> {
+        return selectedCategory?subCategoriesData[selectedCategory]||[] :[]
+    }, [selectedCategory, subCategoriesData])
+
+    const regularPrice=watch("regular_price")
+
+    const convertFileToBase64 = (file:File) => {
+
+    }
+    const handleImageChange = async (file: File | null, index: number) => {
+        if (!file) return
+        try {
+            const fileName = await convertFileToBase64(file)
+            const response = await axiosInstance.post("/product/api/upload-product-image", fileName)
+            const updateImages = [...images]
+            updateImages[index] = response.data.file_name;
+            if (index === images.length - 1 && images.length < 8) {
+                updateImages.push(null)
+            }
+            setImages(updateImages)
+            setValue("images",updateImages)
+        } catch (error) {
+            console.log(error)
         }
-        setImages(updateImages)
-        setValue("images",updateImages)
 
     }
     const handleRemoveImage = ( index: number) => {
-        setImages((prevImages) => {
-            let updatedImages = [...prevImages]
-            if (index == -1){
-                updatedImages[0] = null;
-            } else {
-                updatedImages.splice(index,1)
+
+            try {
+
+                const updatedImages = [...images]
+                const imageToDelete=updatedImages[index]
+            if (imageToDelete && typeof imageToDelete==="string"){
+                
             }
+
+                updatedImages.splice(index,1)
             if (!updatedImages.includes(null) && updatedImages.length < 8) {
                 updatedImages.push(null)
             }
-            return updatedImages
-        })
+            setImages( updatedImages)
+
         setValue("images",images)
 
+            } catch (error) {
+                console.log(error)
+            }
     }
     const onSubmit = (data: any) => {
+
+    }
+    const handleSaveDraft = () => {
 
     }
   return (
@@ -104,9 +161,152 @@ const CreateProduct = () => {
                           <div className='mt-2'>
                               <CustomSpecifications control={control} errors={errors}/>
                           </div>
-                  </div>
+                          <div className='mt-2'>
+                              <CustomProperties control={control} errors={errors}/>
+                          </div>
+                          <div className='mt-2'>
+                              <label className="block font-semibold text-gray-300 mb-1"> Cash On Delivery</label>
+                              <select className="w-full border border-gray-700 bg-transparent mb-1 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500" defaultValue="yes" {...register("cash_on_delivery", { required: "Cash on Delivery is required" })}>
+                                    <option value="yes" className='bg-black'>Yes</option>
+                                    <option value="no" className='bg-black'>No</option>
+                              </select>
+                              {errors.cash_on_delivery && (<p className="text-red-500 text-sm">{String(errors.cash_on_delivery.message)}</p>)}
+                          </div>
+                      </div>
+                      <div className='w-2/4'>
+                          <div className='mt-2'>
+                           <label className='block font-semibold text-gray-300 mb-1' >Category</label>
+                          {isLoading ? (<p className='text-gray-400'>Loading categories...</p>) : isError ? (<p className='text-red-500'>Failed to load categories</p>) : (<Controller name='category' control={control} rules={{ required: "Category is required" }} render={({ field }) => (
+                            <select {...field} className='w-full border outline-none border-gray-700 bg-transparent p-2 !rounded text-white'>
+                            {" "}
+                            <option value="" className='bg-black' >Select Category</option>
+                            {categories?.map((category: string) => (
+                            <option value={category} key={category} className='bg-black'>{category}</option>))}
+                            </select>)} />)}
+                            {errors.category && (<p className="text-red-500 text-sm">{String(errors.category.message)}</p>)}
+                          </div>
+                          <div className='mt-2'>
+                              <label className='block font-semibold text-gray-300 mb-1'>Subcategory</label>
+                              <Controller name='subcategory' control={control} rules={{ required: "Subcategory is required" }} render={({ field }) => (
+                                <select {...field} className='w-full border outline-none border-gray-700 bg-transparent p-2 !rounded text-white'>
+                                {" "}
+                                <option value="" className='bg-black' >Select Subcategory</option>
+                                {subCategories?.map((subcategory: string) => (
+                                <option value={subcategory} key={subcategory} className='bg-black'>{subcategory}</option>))}
+                                  </select>)} />
+                                {errors.subcategory && (<p className="text-red-500 text-sm">{String(errors.subcategory.message)}</p>)}
+                            </div>
+                          <div className='mt-2'>
+                              <label className='bock font-semibold text-gray-300 mb-1'>
+                                  Detailed Description (Min 100 words)
+                              </label>
+                              <Controller name='Detailed description' control={control} rules={{
+                                  required: "Detailed description is required!",
+                                  validate: (value) => {
+                                      const wordCount = value?.split(/\s+/).filter((word: string) => word).length
+                                      return (wordCount >=150 || `Description must be at least 100 words(Current:${wordCount})`)
+                                  },
+                              }}
+                                  render={({ field }) => (<RichTextEditor value={field.value} onChange={field.onChange} />)}
+                              />
+                                {errors.detailed_description && (<p className="text-red-500 text-sm">{String(errors.detailed_description.message)}</p>)}
+
+                          </div>
+                          <div className='mt-2'>
+                              <Input label="Video URL" placeholder='https:www.youtube.com'
+                                  {...register("video_url", {
+                                      pattern: {
+                                          value:/^https:\/\/www\.youtube\.com\/embed\/[a-zA-Z0-9_-]+$/,
+                                          message:"Invalid Youtube embed URL! Use format: https://www.youtube.com/embed/xyz123"
+                                  }
+                                  })} />
+                                {errors.video_url && (<p className="text-red-500 text-sm">{String(errors.video_url.message)}</p>)}
+
+                          </div>
+                          <div className='mt-2'>
+                              <Input label="Regular Price" placeholder='₹20'
+                                  {...register("regular_price", {
+                                      valueAsNumber: true,
+                                      min: { value: 1, message: "Price must be at least 1" },
+                                      validate:(value)=>!isNaN(value)||"Only numbers are allowed"
+                                  })} />
+                                {errors.regular_price && (<p className="text-red-500 text-sm">{String(errors.regular_price.message)}</p>)}
+
+                          </div>
+                          <div className='mt-2'>
+                              <Input label="Sale Price" placeholder='₹20'
+                                  {...register("sale_price", {
+                                      required: "Sale Price is Required",
+                                      valueAsNumber: true,
+                                      min: { value: 1, message: "Sale Price must be at least 1" },
+                                      validate: (value) => {
+                                          if (isNaN(value)) return "Only Number are allowed"
+                                          if (regularPrice && value>=regularPrice) return "Sale Price must be less than Regular Price"
+                                          return true
+                                      }
+                                  })} />
+                                {errors.sale_price && (<p className="text-red-500 text-sm">{String(errors.sale_price.message)}</p>)}
+
+                          </div>
+                          <div className='mt-2'>
+                              <Input label="Stock" placeholder='100'
+                                  {...register("stock", {
+                                      required: "Stock is Required",
+                                      valueAsNumber: true,
+                                      min: { value: 1, message: "Stock must be at least 1" },
+                                      max:{value:1000, message:"Stock cannot exceed 1,000"},
+                                      validate: (value) => {
+                                          if (isNaN(value)) return "Only Number are allowed"
+                                          if (!Number.isInteger(value)) return "Sale Price must be a whole number"
+                                          return true
+                                      }
+                                  })} />
+                                {errors.stock && (<p className="text-red-500 text-sm">{String(errors.stock.message)}</p>)}
+
+                          </div>
+                          <div className='mt-2'>
+                              <SizeSelector control={control} errors={errors}/>
+                          </div>
+                          <div className='mt-3'>
+                              <label className='block font-simibold text-gray-300 mb-1'>
+                                  Select Discount Codes (Optional)
+                              </label>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+  {discountCodes?.map((code: any) => (
+    <button
+      key={code.id}
+      type="button"
+      className={`px-3 py-1 rounded-md text-sm font-semibold border ${
+        watch("discountCodes")?.includes(code.id)
+          ? "bg-blue-600 text-white border-blue-600"
+          : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"
+      }`}
+      onClick={() => {
+        const currentSelection = watch("discountCodes") || [];
+        const updatedSelection = currentSelection.includes(code.id)
+          ? currentSelection.filter((id: string) => id !== code.id)
+          : [...currentSelection, code.id];
+        setValue("discountCodes", updatedSelection);
+      }}
+    >
+      {code.public_name} ({code.discountValue}
+      {code.discountType === "percentage" ? "%" : "$"})
+    </button>
+  ))}
+</div>
+                      </div>
                 </div>
           </div>
+          </div>
+          <div className="mt-6 flex justify-end gap-3">
+              {isChanged&&(
+                <button type="button" onClick={handleSaveDraft} className="px-4 py-2 bg-gray-700 taxt-white rounded-md">
+                Save Draft
+            </button>)}
+              <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 taxt-white rounded-md">
+                {loading?"Creating...":"Create"}
+            </button>
           </div>
 
     </form>
