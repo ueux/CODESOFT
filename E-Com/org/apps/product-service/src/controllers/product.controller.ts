@@ -269,6 +269,7 @@ export const getShopProducts = async (
       include: { images: true },
     });
     res.status(201).json({
+<<<<<<< ours
       success: true,
       products,
     });
@@ -345,3 +346,51 @@ export const restoreProduct = async (
     return next(error);
   }
 };
+=======
+        success: true,
+        products
+    })
+} catch (error) {
+return next(error)
+}
+
+}
+
+export const deleteProduct = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+        const sellerId=req.seller.shop.id
+        const product = await prisma.products.findUnique({ where: { id } ,select:{id:true,shopId:true,isDeleted:true}});
+
+        if (!product) {
+            return next(new ValidationError("Product not found"))
+        }
+if(product.shopId!==sellerId)return next(new ValidationError("Unauthorized action"))
+if(product.isDeleted)return next(new ValidationError("Product is already deleted"))
+        const deleteProduct=await prisma.products.update({ where: { id },data:{isDeleted:true, deletedAt:new Date(Date.now()+24*60*60*1000)} });
+        res.status(200).json({
+            success: true, deleteProduct,
+            message: "Product is sceduled for deletion in 24 hours. You can restore it within this time"
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+export const restoreProduct = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+        const sellerId=req.seller.shop.id
+        const product = await prisma.products.findUnique({ where: { id } ,select:{id:true,shopId:true,isDeleted:true}});
+
+        if (!product) {
+            return next(new ValidationError("Product not found"))
+        }
+if(product.shopId!==sellerId)return next(new ValidationError("Unauthorized action"))
+if(!product.isDeleted)return next(new ValidationError("Product is not in delete state "))
+        const deleteProduct=await prisma.products.update({ where: { id },data:{isDeleted:false, deletedAt:null} });
+        res.status(200).json({ success: true, message: "Product is successfully restored" });
+    } catch (error) {
+        return next(error);
+    }
+};
+>>>>>>> theirs

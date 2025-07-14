@@ -1,3 +1,4 @@
+<<<<<<< ours
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
@@ -34,6 +35,8 @@ cron.schedule("0 * * * *", async () => {
   await cleanupExpiredProducts();
 });
 
+=======
+>>>>>>> theirs
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
