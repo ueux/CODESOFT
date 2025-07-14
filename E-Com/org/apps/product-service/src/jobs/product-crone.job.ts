@@ -1,5 +1,4 @@
 <<<<<<< HEAD
-=======
 <<<<<<< ours
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
@@ -39,7 +38,8 @@ cron.schedule("0 * * * *", async () => {
 
 =======
 >>>>>>> theirs
->>>>>>> 41bdc61ca4f22d42c74a7bdddf3ac9ac69d5b187
+=======
+>>>>>>> a4a5a12 (*All Products page part-1*)
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
