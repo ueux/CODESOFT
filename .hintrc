@@ -8,7 +8,11 @@
       {
         "button-name": "off"
       }
+<<<<<<< HEAD
     ],
     "typescript-config/is-valid": "off"
+=======
+    ]
+>>>>>>> 41bdc61ca4f22d42c74a7bdddf3ac9ac69d5b187
   }
 }
