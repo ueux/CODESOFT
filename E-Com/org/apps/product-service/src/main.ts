@@ -6,7 +6,7 @@ import router from './routes/product.router';
 import swaggerUi from "swagger-ui-express"
 import bodyParser from "body-parser"
 const swaggerDocument=require("./swagger-output.json")
-
+import "./jobs/product-crone.job"
 const app = express();
 
 app.use(cors({

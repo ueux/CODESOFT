@@ -150,6 +150,16 @@
           }
         }
       }
+    },
+    "/get-shop-products": {
+      "get": {
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
     }
   }
 }
