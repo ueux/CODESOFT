@@ -4,6 +4,7 @@ import { errorMiddleware } from '@packages/error-handler/error-middleware';
 import cookieParser from 'cookie-parser';
 import router from './routes/product.router';
 import swaggerUi from "swagger-ui-express"
+import bodyParser from "body-parser"
 const swaggerDocument=require("./swagger-output.json")
 
 const app = express();
@@ -14,7 +15,11 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
     credentials: true // Allow credentials (cookies, authorization headers, etc.))
 }));
-app.use(express.json()); // Parse JSON bodies
+// Increase JSON payload limit (e.g., 50MB)
+app.use(bodyParser.json({ limit: '50mb' }));
+
+// Increase URL-encoded payload limit
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true })); // Parse JSON bodies
 app.use(cookieParser()); // Parse cookies
 
 

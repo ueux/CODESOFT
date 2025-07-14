@@ -5,16 +5,22 @@ import React, { useState } from "react";
 const ImagePlaceholder = ({
   size,
   small,
+  pictureUploadingLoader,
   onImageChange,
-  onRemove,
+    onRemove,
+  setSelectedImage,
   defaultImage = null,
   index = null,
-  setOpenImageModal,
+    setOpenImageModal,
+  images
 }: {
   size: string;
-  small?: boolean;
+    small?: boolean;
+    pictureUploadingLoader: boolean;
+images: any;
   onImageChange: (file: File | null, index: number) => void;
-  onRemove?: (index: number) => void;
+        onRemove?: (index: number) => void;
+        setSelectedImage: (e:string) => void;
   defaultImage?: string | null;
   index?: any;
   setOpenImageModal: (openImageModal: boolean) => void;
@@ -31,8 +37,9 @@ const ImagePlaceholder = ({
     return (<div className={`relative ${small ? "h-[180px]" : "h-[480px]"} w-full cursor-pointer bg-[#1e1e1e] border border-x-gray-600 rounded-lg flex flex-col items-center justify-center`}>
         <input type="file" placeholder="image" accept="image/*" className="hidden" id={`image-upload-${index}`} onChange={handleFileChange} />
         {imagePreview ? (<>
-            <button type="button" onClick={() => onRemove?.(index!)} className="absolute top-3 right-3 p-2 !rounded bg-red-600 shadow-lg"><X size={16} /></button>
-            <button className="absolute top-3 right-[70px] p-2 !rounded bg-blue-500 shadow-lg cursor-pointer" onClick={()=>setOpenImageModal(true)}> <WandSparkles size={16}/></button>
+            <button disabled={pictureUploadingLoader} type="button" onClick={() => onRemove?.(index!)} className="absolute top-3 right-3 p-2 !rounded bg-red-600 shadow-lg"><X size={16} /></button>
+            <button disabled={pictureUploadingLoader} className="absolute top-3 right-[70px] p-2 !rounded bg-blue-500 shadow-lg cursor-pointer" onClick={() => { setOpenImageModal(true)
+            setSelectedImage(images[index].fileUrl)}}> <WandSparkles size={16} /></button>
         </>) : (<>
         <label htmlFor={`image-upload-${index}`} className="absolute top-3 right-3 p-2 !rounded bg-slate-700 shadow-lg cursor-pointer"> <Pencil size={16}/></label>
         </>)}
