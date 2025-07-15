@@ -255,7 +255,7 @@ const CreateProduct = () => {
                                   required: "Detailed description is required!",
                                   validate: (value) => {
                                       const wordCount = value?.split(/\s+/).filter((word: string) => word).length
-                                      return (wordCount >=150 || `Description must be at least 100 words(Current:${wordCount})`)
+                                      return (wordCount >=100 || `Description must be at least 100 words(Current:${wordCount})`)
                                   },
                               }}
                                   render={({ field }) => (<RichTextEditor value={field.value} onChange={field.onChange} />)}
