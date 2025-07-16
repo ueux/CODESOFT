@@ -2,8 +2,7 @@
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
-import { useGetAuthUserQuery, useGetProjectsQuery } from "@/state/api";
-import { signOut } from "aws-amplify/auth";
+import {  useGetProjectsQuery } from "@/state/api";
 import {
   AlertCircle,
   AlertOctagon,
@@ -31,22 +30,11 @@ const Sidebar = () => {
   const [showProjects, setShowProjects] = useState(true);
   const [showPriority, setShowPriority] = useState(true);
 
-  // const { data: projects } = useGetProjectsQuery();
+  const { data: projects } = useGetProjectsQuery();
   const dispatch = useAppDispatch();
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed,
   );
-
-  // const { data: currentUser } = useGetAuthUserQuery({});
-  // const handleSignOut = async () => {
-  //   try {
-  //     await signOut();
-  //   } catch (error) {
-  //     console.error("Error signing out: ", error);
-  //   }
-  // };
-  // if (!currentUser) return null;
-  // const currentUserDetails = currentUser?.userDetails;
 
   const sidebarClassNames = `fixed flex flex-col h-[100%] justify-between shadow-xl
     transition-all duration-300 h-full z-40 dark:bg-black overflow-y-auto bg-white
@@ -112,6 +100,16 @@ const Sidebar = () => {
             <ChevronDown className="h-5 w-5" />
           )}
         </button>
+        {/* PROJECTS LIST */}
+        {showProjects &&
+          projects?.map((project) => (
+            <SidebarLink
+              key={project.id}
+              icon={Briefcase}
+              label={project.name}
+              href={`/projects/${project.id}`}
+            />
+          ))}
 
         {/* PRIORITIES LINKS */}
         <button
@@ -152,7 +150,6 @@ const Sidebar = () => {
           </>
         )}
       </div>
-
     </div>
   );
 };
