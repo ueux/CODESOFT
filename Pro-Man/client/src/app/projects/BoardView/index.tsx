@@ -120,7 +120,7 @@ const TaskColumn = ({
     </div>
   );
 };
-
+ 
 type TaskProps = {
   task: TaskType;
 };
