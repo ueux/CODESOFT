@@ -84,9 +84,7 @@ const Signup = () => {
     };
     const connectStripe = async() => {
         try {
-            console.log(sellerId)
             const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-stripe-link`, { sellerId })
-            console.log(response)
             if(response.data.url){
                 window.location.href=response.data.url
             }

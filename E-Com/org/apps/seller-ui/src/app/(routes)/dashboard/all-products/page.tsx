@@ -74,7 +74,7 @@ const ProductList = () => {
         accessorKey: "image",
         header: "Image",
         cell: ({ row }: any) => {
-          const imageUrl = row.original.images[0].url;
+          const imageUrl = row.original?.images[0]?.url;
 
           return imageUrl ? (
             <Image

@@ -105,7 +105,6 @@ const CreateProduct = () => {
             if (index === images.length - 1 && images.length < 8) {
                 updatedImages.push(null)
             }
-            console.log(updatedImages)
             setImages(updatedImages)
             setValue("images",updatedImages)
         } catch (error) {

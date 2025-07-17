@@ -1,6 +1,7 @@
 import { AuthError, ValidationError } from "@packages/error-handler";
 import { imagekit } from "@packages/libs/imagekit";
 import prisma from "@packages/libs/prisma";
+import { Prisma } from "@prisma/client";
 import {Request, Response,NextFunction } from "express"
 
 export const getCategories = async (req: Request, res: Response, next: NextFunction) => {
@@ -101,7 +102,6 @@ export const uploadProductImage = async (req: Request, res: Response, next: Next
     }
 };
 
-// Additional endpoint to delete image from ImageKit
 export const deleteProductImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { fileId } = req.params;
@@ -145,8 +145,7 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
       subCategory,
       customProperties = {},
       images = [],
-    } = req.body;
-
+      } = req.body;
     // Basic field validation
     if (!title||
       !slug ||
@@ -173,7 +172,9 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
 
     if (slugCheck) {
       return next(new ValidationError("Product with this slug already exists."));
-    }
+      }
+      const userId = req.seller.id
+      const shopId=req.seller.shop.id
 
     // Create Product
     const product = await prisma.products.create({
@@ -199,8 +200,10 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
         regular_price: parseFloat(regular_price),
             custom_properties: customProperties || {},
             images: {
-            create:images.filter((img:any)=>img && img.fileId && img.fileUrl).map((image:any)=>({file_id:image.fileId, url:image.fileUrl })),
-        }
+            create:images.filter((img:any)=>img && img.fileId && img.fileUrl).map((image:any)=>({file_id:image.fileId, url:image.fileUrl,
+            userId:userId,
+            shopId:shopId })),
+            }
         },
         include:{images:true}
     });
@@ -263,3 +266,44 @@ if(!product.isDeleted)return next(new ValidationError("Product is not in delete 
         return next(error);
     }
 };
+
+export const getAllProducts=async (req:Request,res:Response,next:NextFunction)=> {
+    try {
+        const page = parseInt(req.query.page as string) || 1
+        const limit = parseInt(req.query.limit as string) || 20
+        const skip = (page - 1) * limit
+        const type = req.query.type
+const baseFilter: Prisma.productsWhereInput = {
+      OR: [
+        { starting_date: null },
+        { ending_date: null },
+      ],
+        };
+        const orderBy: Prisma.productsOrderByWithRelationInput = type === "latest" ? { createdAt: "desc" as Prisma.SortOrder } : { totalSales: "desc" as Prisma.SortOrder }
+        const [products, total, top10Products] = await Promise.all([prisma.products.findMany({
+            skip,
+            take:limit,
+            include: {
+                images: true,
+            Shop:true,
+            },
+            where: baseFilter,
+            orderBy:{totalSales:"desc"},
+        }),
+            prisma.products.count({ where: baseFilter }),
+            prisma.products.findMany({ take: 10, where: baseFilter ,orderBy})
+        ])
+    res.status(201).json({
+        success: true,
+        products,
+        top10By: type === "latest" ? "latest" : "topSales",
+        top10Products,
+        total,
+        currentPage: page,
+        totalPages:Math.ceil(total/limit)
+    })
+} catch (error) {
+return next(error)
+}
+
+}
