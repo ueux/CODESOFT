@@ -315,7 +315,7 @@ const CreateProduct = () => {
 
                           </div>
                           <div className='mt-2'>
-                              <SizeSelector control={control} errors={errors}/>
+                              <SizeSelector control={control} errors={{ sizes: errors.sizes }}/>
                           </div>
                           <div className='mt-3'>
                               <label className='block font-simibold text-gray-300 mb-1'>
@@ -323,28 +323,28 @@ const CreateProduct = () => {
                               </label>
                           </div>
                           <div className="flex flex-wrap gap-2">
-  {discountCodes?.map((code: any) => (
-    <button
-      key={code.id}
-      type="button"
-      className={`px-3 py-1 rounded-md text-sm font-semibold border ${
-        watch("discountCodes")?.includes(code.id)
-          ? "bg-blue-600 text-white border-blue-600"
-          : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"
-      }`}
-      onClick={() => {
-        const currentSelection = watch("discountCodes") || [];
-        const updatedSelection = currentSelection.includes(code.id)
-          ? currentSelection.filter((id: string) => id !== code.id)
-          : [...currentSelection, code.id];
-        setValue("discountCodes", updatedSelection);
-      }}
-    >
-      {code.public_name} ({code.discountValue}
-      {code.discountType === "percentage" ? "%" : "$"})
-    </button>
-  ))}
-</div>
+                                {discountCodes?.map((code: any) => (
+                                    <button
+                                    key={code.id}
+                                    type="button"
+                                    className={`px-3 py-1 rounded-md text-sm font-semibold border ${
+                                        watch("discountCodes")?.includes(code.id)
+                                        ? "bg-blue-600 text-white border-blue-600"
+                                        : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"
+                                    }`}
+                                    onClick={() => {
+                                        const currentSelection = watch("discountCodes") || [];
+                                        const updatedSelection = currentSelection.includes(code.id)
+                                        ? currentSelection.filter((id: string) => id !== code.id)
+                                        : [...currentSelection, code.id];
+                                        setValue("discountCodes", updatedSelection);
+                                    }}
+                                    >
+                                    {code.public_name} ({code.discountValue}
+                                    {code.discountType === "percentage" ? "%" : "$"})
+                                    </button>
+                                ))}
+                            </div>
                       </div>
                 </div>
           </div>
@@ -370,25 +370,24 @@ const CreateProduct = () => {
                             <h3 className="text-white text-sm font-semibold">AI Enhancements</h3>
 
                             <div className="grid grid-cols-2 gap-3 mx-h-[250px] overflow-y-auto">
-                            {enhancements?.map(({ label, effect }) => (
-                                <button
-                                key={effect}
-                                className={`p-2 rounded-md flex items-center gap-2 ${
-                                    activeEffect === effect
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-gray-700 hover:bg-gray-600"
-                                }`}
-                                onClick={() => applyTransformation(effect)}
-                                disabled={processing}
-                                >
-                                <Wand size={18} />
-                                {label}
-                                </button>
-                            ))}
-    </div>
-  </div>
-)}
-
+                                {enhancements?.map(({ label, effect }) => (
+                                    <button
+                                    key={effect}
+                                    className={`p-2 rounded-md flex items-center gap-2 ${
+                                        activeEffect === effect
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-gray-700 hover:bg-gray-600"
+                                    }`}
+                                    onClick={() => applyTransformation(effect)}
+                                    disabled={processing}
+                                    >
+                                    <Wand size={18} />
+                                    {label}
+                                    </button>
+                                ))}
+                                </div>
+                            </div>
+                        )}
                 </div>
             </div>
             )}

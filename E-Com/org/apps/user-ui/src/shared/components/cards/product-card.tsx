@@ -2,9 +2,11 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import Ratings from '../ratings'
 import { Eye, Heart, ShoppingBag } from 'lucide-react'
+import ProductDetailsCard from './product-details-card'
 
 const ProductCard = ({ product, isEvent }: { product: any, isEvent?: boolean }) => {
     const [timeLeft, setTimeLeft] = useState("")
+    const [open,setOpen]=useState(false)
     useEffect(() => {
         if (isEvent && product?.ending_date) {
             const interval = setInterval(() => {
@@ -28,6 +30,9 @@ const ProductCard = ({ product, isEvent }: { product: any, isEvent?: boolean }) 
 
   return (
       <div className='w-full min-h-[350px] h-max bg-white rounded-lg relative'>
+            {open && (
+                <ProductDetailsCard data={product} setOpen={setOpen} />
+            )}
           {isEvent && (
               <div className='absolute top-2 left-2 bg-red-600 text-white text-[10px] font-semibold px-2 py-1 rounded-sm shadow-md'>
                   OFFER
@@ -73,7 +78,7 @@ const ProductCard = ({ product, isEvent }: { product: any, isEvent?: boolean }) 
                   <Heart className='cursor-pointer hover:scale-110 transition' size={22} fill='red' stroke='red'/>
               </div>
               <div className='bg-white rounded-full p-[6px] shadow-md'>
-                  <Eye className='cursor-pointer text-[#4b5563] hover:scale-110 transition' size={22} />
+                  <Eye className='cursor-pointer text-[#4b5563] hover:scale-110 transition' size={22} onClick={()=>setOpen(!open)}/>
               </div>
               <div className='bg-white rounded-full p-[6px] shadow-md'>
                   <ShoppingBag className='cursor-pointer text-[#4b5563] hover:scale-110 transition' size={22}/>

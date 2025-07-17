@@ -10,7 +10,7 @@ import Logo from 'apps/seller-ui/src/assets/svgs/logo'
 import SidebarItem from './sidebar.item'
 import { HomeIcon } from 'apps/seller-ui/src/assets/icons/home'
 import SidebarMenu from './sidebar.menu'
-import { BellPlus, BellRing, CalendarPlus, Headset, ListOrdered, LogOut, Mail, PackageSearch, Settings, SquarePlus, TicketPercent } from 'lucide-react'
+import { BellPlus, BellRing, CalendarPlus, ListOrdered, LogOut, Mail, PackageSearch, Settings, SquarePlus, TicketPercent } from 'lucide-react'
 import Payment from 'apps/seller-ui/src/assets/icons/payment'
 
 const SidebarBarWrapper = () => {
