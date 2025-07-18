@@ -30,10 +30,10 @@ const Cart = () => {
     }
     const increaseQuantity = (id: string) => {
         useStore.setState((state: any) => ({
-            cart:state.cart.map((item:any)=>item.id===id && item.quantity>1 ? {...item,quantity:(item.quantity?? 1)+1}:item)
+            cart:state.cart.map((item:any)=>(item.id===id && item.quantity>0) ? {...item,quantity:(item.quantity|| 1)+1}:item)
         }))
     }
-    const subTotal=cart.reduce((total:number,item:any)=>total+item.quantity* item.sale_price)
+    const subTotal=cart?.reduce((total:number,item:any)=>total+(item.quantity* item.sale_price),0)
   return (
       <div className='w-full bg-white'>
           <div className='md:w-[80%] w-[95%] mx-auto min-h-screen'>

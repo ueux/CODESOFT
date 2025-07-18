@@ -34,13 +34,14 @@ type Store = { cart: Product[];
 
 export const useStore = create<Store>()(persist((set, get) => ({
     cart: [], wishlist: [],
-    addToCart: (product ,user,location,deviceInfo) => {
+    addToCart: (product, user, location, deviceInfo) => {
         set((state) => {
             const existing = state.cart?.find((item) => item.id === product.id)
             if (existing) {
-                return { cart: state.cart.map((item) => item.id === product.id ? { ...item, quantity: (item.quantity ?? 1) + 1 } :item)}
+                return { cart: state.cart.map((item) => item.id === product.id ? { ...item,
+                quantity: (item.quantity ?? 1) + (product.quantity ?? 1),} :item)}
             }
-            return {cart:[...state.cart,{...product,quantity:1}]}
+            return {cart:[...state.cart,{...product,quantity:product.quantity}]}
         })
     },
     removeFromCart: (id, user, location, diviceInfo) => {

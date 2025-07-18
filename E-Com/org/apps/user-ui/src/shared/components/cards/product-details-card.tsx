@@ -25,7 +25,6 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
   const location = useLocationTracking()
   const deviceInfo=useDeviceTracking()
   const addToCart = useStore((state: any) => state.addToCart)
-  const removeFromCart=useStore((state:any)=>state.removeFromCart)
   const cart = useStore((state: any) => state.cart)
   const isInCart=cart.some((item:any)=>item.id===data.id)
 
@@ -40,15 +39,16 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
     : 0
   const handleAddToCart = () => {
     setIsAddingToCart(true)
-    // Simulate API call
-    setTimeout(() => {
-      addToCart({ ...data, quantity: quantity }, user, location, deviceInfo)
-      setQuantity(0)
-      setSelectedColor("")
-      setSelectedSize("")
-      setActiveImage(0)
+    const payload = {
+      ...data,
+      selectedColor,
+      selectedSize,
+      quantity,
+    };
+    addToCart(payload, user, location, deviceInfo);
+
+    setActiveImage(0)
       setIsAddingToCart(false)
-    }, 1000)
   }
 
   return (

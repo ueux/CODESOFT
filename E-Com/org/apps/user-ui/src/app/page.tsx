@@ -25,26 +25,49 @@ const Page = () => {
     staleTime:1000*60*2
   })
   return (
-    <div className=''>
+    <div className='bg-gradient-to-b from-gray-50 to-white'>
       <Hero />
-      <div className='md:w-[80%] w[-90%] my-10 m-auto'>
-        <div className='mb-8'>
-          <SectionTitle title='Suggested Products'/>
+      <div className='max-w-7xl w-[90%] my-12 mx-auto'>
+        <div className='mb-12'>
+          <SectionTitle title='Suggested Products' subtitle='Discover our carefully curated selection'/>
         </div>
         {isLoading&&(
-
-          <div className='grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5'>
-            {Array.from({length:10}).map((_,index)=>(<div key={index} className='h-[250px] bg-gray-300 animate-pulse rounded-xl'/>))}
-          </div>)
-        }
+          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6'>
+            {Array.from({length:10}).map((_,index)=>(
+              <div key={index} className='h-[300px] bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse rounded-lg shadow-sm'/>
+            ))}
+          </div>
+        )}
         {!isLoading && !isError && (
-          <div className='m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6'>
             {products?.map((product: any) => (
-              <ProductCard key={product.id} product={product}/>
+              <ProductCard
+                key={product.id}
+                product={product}
+                className='transition-all duration-300 hover:scale-[1.02] hover:shadow-md'
+              />
             ))}
           </div>
         )}
       </div>
+
+      {/* Latest Products Section */}
+      {latestProducts && (
+        <div className='max-w-7xl w-[90%] my-16 mx-auto'>
+          <div className='mb-12'>
+            <SectionTitle title='New Arrivals' subtitle='Fresh picks just for you'/>
+          </div>
+          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6'>
+            {latestProducts?.map((product: any) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                className='transition-all duration-300 hover:scale-[1.02] hover:shadow-md'
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
