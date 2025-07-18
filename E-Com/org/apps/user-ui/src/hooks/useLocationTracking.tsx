@@ -1,11 +1,11 @@
-
+'use client'
 import { useEffect, useState } from "react"
 
 const LOCATION_STORAGE_KEY = "use_location"
 const LOCATION_EXPIRY_DAYS = 20
 
 const getStoredLocation = () => {
-    const storedData = localStorage.getItem(LOCATION_STORAGE_KEY)
+    const storedData = window.localStorage.getItem(LOCATION_STORAGE_KEY)
     if (!storedData) return null
     const parseData = JSON.parse(storedData)
     const expiryTime = LOCATION_EXPIRY_DAYS * 24 * 60 * 60 * 1000
