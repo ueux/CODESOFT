@@ -285,7 +285,15 @@ const baseFilter: Prisma.productsWhereInput = {
             take:limit,
             include: {
                 images: true,
-            Shop:true,
+                Shop: {
+                include: {
+          reviews: {
+            orderBy: {
+              createdAt: 'desc'
+            }
+          }
+        }
+            },
             },
             where: baseFilter,
             orderBy:{totalSales:"desc"},

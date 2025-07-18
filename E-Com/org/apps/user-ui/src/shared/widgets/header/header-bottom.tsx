@@ -4,200 +4,114 @@ import HeartIcon from "apps/user-ui/src/assets/svgs/heartIcon";
 import ProfileIcon from "apps/user-ui/src/assets/svgs/profileIcon";
 import { navItems } from "apps/user-ui/src/configs/constants";
 import useUser from "apps/user-ui/src/hooks/useUser";
-import { AlignLeft, ChevronDown } from "lucide-react";
+import { useStore } from "apps/user-ui/src/store";
+import { AlignLeft, ChevronDown, X } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-const HomeIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.5}
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 9.75L12 3l9 6.75V21a1 1 0 01-1 1h-5a1 1 0 01-1-1v-6H9v6a1 1 0 01-1 1H4a1 1 0 01-1-1V9.75z"
-    />
-  </svg>
-);
 
-const InfoIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.5}
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 18v-6m0-6h.01M21 12c0 4.97-4.03 9-9 9S3 16.97 3 12 7.03 3 12 3s9 4.03 9 9z"
-    />
-  </svg>
-);
 
-const ServiceIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.5}
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M4 6h16M4 12h8m-8 6h16"
-    />
-  </svg>
-);
-
-const BlogIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.5}
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M8 16h8M8 12h4m-1-8.5a9 9 0 100 18 9 9 0 000-18z"
-    />
-  </svg>
-);
-
-const ContactIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.5}
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M21 12.79V21a1 1 0 01-1 1h-7v-5H11v5H4a1 1 0 01-1-1v-8.21a2 2 0 01.553-1.387l8-8.4a2 2 0 012.894 0l8 8.4A2 2 0 0121 12.79z"
-    />
-  </svg>
-);
-const NavItem = ({ href, icon: Icon, label }: { href: string; icon: any; label: string }) => (
-  <Link href={href} className="flex items-center gap-2 hover:text-blue-600 transition">
-    <Icon className="w-5 h-5" />
-    {label}
-  </Link>
-);
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const { user,isLoading } = useUser()
+  const { user, isLoading } = useUser();
+  const wishlist = useStore((state: any) => state.wishlist)
+  const cart = useStore((state: any) => state.cart)
+
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 100) {
-        setIsSticky(true);
-      } else {
-        setIsSticky(false);
-      }
+      setIsSticky(window.scrollY > 100);
     };
 
     window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
   return (
-    <div
-      className={`w-full  ${
-        isSticky ? "fixed top-0 left-0 z-[100] bg-white shadow-lg" : "relative"
-      } transition-all duration-300`}
-    >
-      <div
-        className={`w-[80%] m-auto flex items-center justify-between relative  ${
-          isSticky ? "pt-3" : "py-0"
-        }`}
-      >
-        {/*All Dropdown*/}
-        <div
-          className={`w-[260px] ${
-            isSticky && "-mb-2"
-          } flex items-center justify-between cursor-pointer px-5 h-[50px] bg-[#3489ff] `}
-          onClick={() => setShow(!show)}
-        >
-          <div className="flex items-center gap-2 ">
-            <AlignLeft color="white" />
-            <span className="text-white font-medium">All Departments</span>
-          </div>
-          <ChevronDown color="white" />
+    <div className={`w-full ${isSticky ? "fixed top-0 left-0 z-50 bg-white shadow-md" : "relative"} transition-all duration-300`}>
+      <div className={`max-w-7xl mx-auto px-6 flex items-center justify-between ${isSticky ? "py-2" : "py-0"}`}>
+        {/* All Departments Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShow(!show)}
+            className={`flex items-center gap-3 px-5 py-3 rounded-lg ${
+              isSticky ? "bg-blue-600" : "bg-blue-600 hover:bg-blue-700"
+            } text-white font-medium transition-colors duration-200`}
+          >
+            <AlignLeft size={20} />
+            <span>All Departments</span>
+            <ChevronDown size={18} className={`transition-transform ${show ? "rotate-180" : ""}`} />
+          </button>
+
+
         </div>
-        {/*Dropdown Menu*/}
-        {show && (
-          <div className={`absolute left-0 ${isSticky ? "top-[70px]" : "top-[50px]"}  w-[260px] h[400px] bg-[#f5f5f5] `}>
-             <NavItem href="/" icon={HomeIcon} label="Home" />
-        <NavItem href="/about" icon={InfoIcon} label="About" />
-        <NavItem href="/services" icon={ServiceIcon} label="Services" />
-        <NavItem href="/blog" icon={BlogIcon} label="Blog" />
-        <NavItem href="/contact" icon={ContactIcon} label="Contact" />
-          </div>
-        )}
-        {/*Navigation Links*/}
-        <div className="flex items-center gap-5">
-          {navItems.map((item:NavItemsTypes, index:number) => (
-            <Link className="px-5 font-medium text-lg" href={item.href} key={index}>
-                {item.title}
+
+        {/* Navigation Links */}
+        <div className="hidden lg:flex items-center space-x-1">
+          {navItems.map((item, index) => (
+            <Link
+              key={index}
+              href={item.href}
+              className="px-4 py-3 font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200 relative group"
+            >
+              {item.title}
+              <span className="absolute bottom-2 left-1/2 transform -translate-x-1/2 h-0.5 bg-blue-600 w-0 group-hover:w-4/5 transition-all duration-300"></span>
             </Link>
           ))}
+        </div>
 
-        </div>
-        <div>
-          {isSticky && (
-            <div className="flex items-center gap-8 pb-2">
-            <div className="flex items-center gap-2">
-            {!isLoading && user ? (<>
-              <Link href={"/profile"} className="border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a] ">
-              <ProfileIcon />
-            </Link>
-              <Link href={"/login"}>
-              <span className=" font-medium block">Hello,</span>
-              <span className="font-semibold">{user.name.split(" ")[0]}</span>
-            </Link>
-            </>) : (<>
-              <Link
-              href={"/login"}
-              className="border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a] "
-            >
-              <ProfileIcon />
-            </Link>
-              <Link href={"/login"}>
-              <span className=" font-medium block">Hello,</span>
-              <span className="font-semibold">{isLoading? "...":"Sign In"}</span>
-            </Link>
-            </>
-            )}
+        {/* Sticky Header Actions */}
+        {isSticky && (
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center gap-3">
+              {!isLoading && user ? (
+                <>
+                  <Link href="/profile" className="relative group">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 border-2 border-blue-100 group-hover:border-blue-300 transition-all">
+                      <ProfileIcon className="text-blue-600" />
+                    </div>
+                  </Link>
+                  <Link href="/profile" className="hidden md:block">
+                    <span className="text-sm font-medium text-gray-600 block">Hello,</span>
+                    <span className="text-sm font-semibold text-gray-800">
+                      {user.name.split(" ")[0]}
+                    </span>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="relative group">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 border-2 border-blue-100 group-hover:border-blue-300 transition-all">
+                      <ProfileIcon className="text-blue-600" />
+                    </div>
+                  </Link>
+                  <Link href="/login" className="hidden md:block">
+                    <span className="text-sm font-medium text-gray-600 block">Hello,</span>
+                    <span className="text-sm font-semibold text-gray-800">
+                      {isLoading ? "..." : "Sign In"}
+                    </span>
+                  </Link>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <Link href="/wishlist" className="relative group p-2">
+                <HeartIcon className="w-6 h-6 text-gray-700 group-hover:text-red-500 transition-colors" />
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
+                  <span className="text-white text-xs font-bold">{wishlist?.length}</span>
+                </div>
+              </Link>
+
+              <Link href="/cart" className="relative group p-2">
+                <CartIcon className="w-6 h-6 text-gray-700 group-hover:text-blue-600 transition-colors" />
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
+                  <span className="text-white text-xs font-bold">{cart?.length}</span>
+                </div>
+              </Link>
+            </div>
           </div>
-          <div className="flex items-center gap-5">
-            <Link href={"/wishlist"} className="relative">
-              <HeartIcon className="w-7 h-7 text-gray-700 " />
-              <div className="w-5 h-5 bg-red-500 rounded-full absolute top-[-10px] right-[-10px]  flex items-center justify-center">
-                <span className="text-white text-xs font-semibold">0</span>
-              </div>
-            </Link>
-            <Link href={"/cart"} className="relative">
-              <CartIcon className="w-7 h-7 text-gray-700  " />
-              <div className="w-5 h-5 bg-red-500 rounded-full absolute top-[-10px] right-[-10px]  flex items-center justify-center">
-                <span className="text-white text-xs font-semibold">0</span>
-              </div>
-            </Link>
-              </div>
-              </div>)
-          }
-        </div>
+        )}
       </div>
     </div>
   );
