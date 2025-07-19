@@ -69,7 +69,7 @@ const Cart = () => {
                                             <span className='line-through text-gray-500 text'>{item.sale_price.toFixed(2)}</span>{" "}
                                             <span className='text-green-600 font-semibold'>{((item.sale_price * (100 - discountPercent)) / 100).toFixed(2)}</span>
                                             <span className='text-green-700 text-xs bg-green-50'>Discount Applied</span>
-                                        </div>) : (<span>${item.sale_price.toFixed(2)}</span>)}
+                                        </div>) : (<span>₹{item.sale_price.toFixed(2)}</span>)}
                                         </td>
                                         <td><div className='flex justify-center items-center border border-gray-200 rounded-[20px] w-[90px] p-[2px]'>
                                             <button className='text-black cursor-pointer text-xl' onClick={()=>decreaseQuantity(item.id)}>-</button>
@@ -85,11 +85,11 @@ const Cart = () => {
                       <div className='p-6 shadow-md w-full lg:w-[30%] bg-[#f9f9f9] rounded-lg'>
                           {discountPrice > 0 && (<div className='flex justify-between items-center text-[#010f1c] text-base font-mediun pb-1'>
                               <span className="font-jost">Discount ({discountPercent}%)</span>
-                              <span className="text-green-600">- ${discountPrice.toFixed(2)}</span>
+                              <span className="text-green-600">- ₹{discountPrice.toFixed(2)}</span>
                           </div>)}
                           <div className='flex justify-between items-center text-[#010f1c] text-[20px] font-[550] pb-3'>
                               <span className="font-jost">Subtotal</span>
-                              <span>${(subTotal - discountPrice).toFixed(2)}</span>
+                              <span>₹{(subTotal - discountPrice).toFixed(2)}</span>
                           </div>
                           <hr className="my-4 text-slate-200" />
                           <div className='mb-4'>
@@ -124,7 +124,7 @@ const Cart = () => {
                               <hr className="my-4 text-slate-200" />
                               <div className="flex justify-between items-center text-center text-[#010f1c] text-[20px] font-[550] pb-3">
                                   <span className="font-jost">Total</span>
-                                  <span>${(subTotal - discountPrice).toFixed(2)} </span>
+                                  <span>₹{(subTotal - discountPrice).toFixed(2)} </span>
                               </div>
                               <button disabled={loading} className='w-full flex items-center justify-center gap-2 cursor-pointer mt-4 py-3 bg-[#010f1c] text-white hover:bg-[#0989FF] translation-all rounded-lg'>
                                   {loading && <Loader2 className="animate-spin w-5 h-5" />}

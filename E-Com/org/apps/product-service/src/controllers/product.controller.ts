@@ -286,7 +286,8 @@ const baseFilter: Prisma.productsWhereInput = {
             include: {
                 images: true,
                 Shop: {
-                include: {
+                    include: {
+                    avatar:true,
           reviews: {
             orderBy: {
               createdAt: 'desc'

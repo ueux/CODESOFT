@@ -23,7 +23,7 @@ const Wishlist = () => {
     }
     const increaseQuantity = (id: string) => {
         useStore.setState((state: any) => ({
-            wishlist:state.wishlist.map((item:any)=>item.id===id && item.quantity>1 ? {...item,quantity:(item.quantity?? 1)+1}:item)
+            wishlist:state.wishlist.map((item:any)=>item.id===id && item.quantity>0 ? {...item,quantity:(item.quantity?? 1)+1}:item)
         }))
     }
 
@@ -56,14 +56,17 @@ const Wishlist = () => {
                                               <Image src={item.images[0]?.url} alt={item.title} width={80} height={80} className="rounded" />
                                               <span >{item.title}</span>
                                           </td>
-                                          <td className='px-6 text-lg'>{item?.sale_price.toFixed(2)}</td>
+                                          <td className='px-6 text-lg'>₹{item?.sale_price.toFixed(2)}</td>
                                           <td><div className='flex justify-center items-center border border-gray-200 rounded-[20px] w-[90px] p-[2px]'>
                                               <button className='text-black cursor-pointer text-xl' onClick={()=>decreaseQuantity(item.id)}>-</button>
                                               <span className='px-4'>{item?.quantity}</span>
                                               <button className='text-black cursor-pointer text-xl' onClick={() => increaseQuantity(item.id)}>+</button>
                                           </div></td>
                                           <td><button className='bg-[#2295FF] cursor-pointer text-white px-5 py-2 rounded-md hover:bg-[#007bff] transition-all'
-                                          onClick={()=>addToCart(item,user,location,deviceInfo)}>
+                                              onClick={() => {
+                                                  addToCart(item, user, location, deviceInfo);
+                                                  removeFromWishlist(item.id, user, location, deviceInfo)
+                                              }}>
                                               Add to Cart
                                           </button></td>
                                           <td><button className="text-[#818487] cursor-pointer hover:text-[#ff1826] transition duration-200"
@@ -75,7 +78,6 @@ const Wishlist = () => {
                       </div>
                    )}
           </div>
-
     </div>
   )
 }
