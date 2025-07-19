@@ -3,8 +3,6 @@ import { Menu, Moon, Search, Settings, Sun, User } from "lucide-react";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkMode, setIsSidebarCollapsed } from "@/state";
-import { useGetAuthUserQuery } from "@/state/api";
-import { signOut } from "aws-amplify/auth";
 import Image from "next/image";
 
 const Navbar = () => {
@@ -14,69 +12,68 @@ const Navbar = () => {
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
-  // const { data: currentUser } = useGetAuthUserQuery({});
-  // const handleSignOut = async () => {
-  //   try {
-  //     await signOut();
-  //   } catch (error) {
-  //     console.error("Error signing out: ", error);
-  //   }
-  // };
-
-  // if (!currentUser) return null;
-  // const currentUserDetails = currentUser?.userDetails;
-
   return (
-    <div className="flex items-center justify-between bg-white px-4 py-3 dark:bg-black">
-      {/* Search Bar */}
-      <div className="flex items-center gap-8">
-        {!isSidebarCollapsed ? null : (
-          <button
-            onClick={() => dispatch(setIsSidebarCollapsed(!isSidebarCollapsed))}
-          >
-            <Menu className="h-8 w-8 dark:text-white" />
-          </button>
-        )}
-        <div className="relative flex h-min w-[200px]">
-          <Search className="absolute left-[4px] top-1/2 mr-2 h-5 w-5 -translate-y-1/2 transform cursor-pointer dark:text-white" />
+    <header className="navbar">
+      <div className="navbar-section">
+        <button
+          onClick={() => dispatch(setIsSidebarCollapsed(!isSidebarCollapsed))}
+          className={`menu-button ${!isSidebarCollapsed ? "md:opacity-0 md:invisible" : ""}`}
+          aria-label="Toggle sidebar"
+        >
+          <Menu className="menu-icon" />
+        </button>
+
+        <div className="search-container">
+          <div className="search-icon">
+            <Search />
+          </div>
           <input
-            className="w-full rounded border-none bg-gray-100 p-2 pl-8 placeholder-gray-500 focus:border-transparent focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-white"
             type="search"
             placeholder="Search..."
+            className="search-input"
           />
         </div>
       </div>
 
-      {/* Icons */}
-      <div className="flex items-center">
+      <div className="navbar-section">
         <button
           onClick={() => dispatch(setIsDarkMode(!isDarkMode))}
-          className={
-            isDarkMode
-              ? `rounded p-2 dark:hover:bg-gray-700`
-              : `rounded p-2 hover:bg-gray-100`
-          }
+          className="action-button"
+          aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
         >
           {isDarkMode ? (
-            <Sun className="h-6 w-6 cursor-pointer dark:text-white" />
+            <Sun className="theme-icon light-icon" />
           ) : (
-            <Moon className="h-6 w-6 cursor-pointer dark:text-white" />
+            <Moon className="theme-icon dark-icon" />
           )}
         </button>
+
         <Link
           href="/settings"
-          className={
-            isDarkMode
-              ? `h-min w-min rounded p-2 dark:hover:bg-gray-700`
-              : `h-min w-min rounded p-2 hover:bg-gray-100`
-          }
+          className="action-button"
+          aria-label="Settings"
         >
-          <Settings className="h-6 w-6 cursor-pointer dark:text-white" />
+          <Settings className="menu-icon" />
         </Link>
-        <div className="ml-2 mr-5 hidden min-h-[2em] w-[0.1rem] bg-gray-200 md:inline-block"></div>
 
+        <div className="divider hidden md:block"></div>
+
+        {/* User Profile - Uncomment when ready */}
+        {/* <div className="user-profile">
+          <div className="user-avatar">
+            <Image
+              src={currentUserDetails?.avatar || "/default-avatar.png"}
+              alt="User profile"
+              fill
+              className="object-cover"
+            />
+          </div>
+          <span className="user-name hidden md:block">
+            {currentUserDetails?.name}
+          </span>
+        </div> */}
       </div>
-    </div>
+    </header>
   );
 };
 

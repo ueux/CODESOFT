@@ -1,91 +1,173 @@
-
 import { useCreateProjectMutation } from "@/state/api";
 import React, { useState } from "react";
-import { formatISO } from "date-fns";
+import { formatISO, isAfter } from "date-fns";
 import Modal from "@/app/_components/Modal";
+import toast from "react-hot-toast";
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-};
+const ModalNewProject = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const [createProject] = useCreateProjectMutation();
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    startDate: "",
+    endDate: ""
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-const ModalNewProject = ({ isOpen, onClose }: Props) => {
-  const [createProject, { isLoading }] = useCreateProjectMutation();
-  const [projectName, setProjectName] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleSubmit = async () => {
-    if (!projectName || !startDate || !endDate) return;
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
-    const formattedStartDate = formatISO(new Date(startDate), {
-      representation: "complete",
-    });
-    const formattedEndDate = formatISO(new Date(endDate), {
-      representation: "complete",
-    });
+    try {
+      const result = await createProject({
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        startDate: formatISO(new Date(formData.startDate)),
+        endDate: formatISO(new Date(formData.endDate)),
+      }).unwrap();
 
-    await createProject({
-      name: projectName,
-      description,
-      startDate: formattedStartDate,
-      endDate: formattedEndDate,
-    });
+      toast.success("Project created successfully!");
+      handleClose();
+    } catch (error: any) {
+      console.error("Failed to create project:", error);
+      toast.error(
+        error.data?.message ||
+        error.message ||
+        "Failed to create project. Please try again."
+      );
+    }
   };
 
-  const isFormValid = () => {
-    return projectName && description && startDate && endDate;
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Project name is required";
+    }
+
+    if (!formData.startDate) {
+      newErrors.startDate = "Start date is required";
+    }
+
+    if (!formData.endDate) {
+      newErrors.endDate = "End date is required";
+    } else if (formData.startDate && isAfter(new Date(formData.startDate), new Date(formData.endDate))) {
+      newErrors.endDate = "End date must be after start date";
+    }
+
+    return newErrors;
   };
 
-  const inputStyles =
-    "w-full rounded border border-gray-300 p-2 shadow-sm dark:border-dark-tertiary dark:bg-dark-tertiary dark:text-white dark:focus:outline-none";
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+    // Clear error when user types
+    if (errors[id]) {
+      setErrors(prev => ({ ...prev, [id]: "" }));
+    }
+  };
+
+  const handleClose = () => {
+    setFormData({
+      name: "",
+      description: "",
+      startDate: "",
+      endDate: ""
+    });
+    setErrors({});
+    onClose();
+  };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} name="Create New Project">
-      <form
-        className="mt-4 space-y-6"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit();
-        }}
-      >
-        <input
-          type="text"
-          className={inputStyles}
-          placeholder="Project Name"
-          value={projectName}
-          onChange={(e) => setProjectName(e.target.value)}
-        />
-        <textarea
-          className={inputStyles}
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-2">
+    <Modal isOpen={isOpen} onClose={handleClose} name="Create New Project">
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            Project Name *
+          </label>
           <input
-            type="date"
-            className={inputStyles}
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            id="name"
+            type="text"
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.name ? "border-red-500" : "border-gray-300"
+            }`}
+            placeholder="Enter project name"
+            value={formData.name}
+            onChange={handleChange}
+            autoFocus
           />
-          <input
-            type="date"
-            className={inputStyles}
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+          {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            id="description"
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter project description"
+            value={formData.description}
+            onChange={handleChange}
           />
         </div>
-        <button
-          type="submit"
-          className={`focus-offset-2 mt-4 flex w-full justify-center rounded-md border border-transparent bg-blue-primary px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-            !isFormValid() || isLoading ? "cursor-not-allowed opacity-50" : ""
-          }`}
-          disabled={!isFormValid() || isLoading}
-        >
-          {isLoading ? "Creating..." : "Create Project"}
-        </button>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+              Start Date *
+            </label>
+            <input
+              id="startDate"
+              type="date"
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.startDate ? "border-red-500" : "border-gray-300"
+              }`}
+              value={formData.startDate}
+              onChange={handleChange}
+            />
+            {errors.startDate && <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+              End Date *
+            </label>
+            <input
+              id="endDate"
+              type="date"
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.endDate ? "border-red-500" : "border-gray-300"
+              }`}
+              value={formData.endDate}
+              onChange={handleChange}
+              min={formData.startDate}
+            />
+            {errors.endDate && <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>}
+          </div>
+        </div>
+
+        <div className="flex justify-end space-x-3 pt-2">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Create Project
+          </button>
+        </div>
       </form>
     </Modal>
   );

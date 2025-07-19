@@ -18,6 +18,7 @@ const config: Config = {
           500: "#6b7280",
           700: "#374151",
           800: "#1f2937",
+          900: "#111827",
         },
         blue: {
           200: "#93c5fd",
@@ -39,4 +40,5 @@ const config: Config = {
   },
   plugins: [],
 };
+
 export default config;

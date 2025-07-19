@@ -1,5 +1,8 @@
-
 import {
+  AlertCircle,
+  CalendarCheck,
+  CalendarDays,
+  CheckCircle2,
   Clock,
   Filter,
   Grid3x3,
@@ -7,81 +10,224 @@ import {
   PlusSquare,
   Share2,
   Table,
+  Users,
 } from "lucide-react";
 import React, { useState } from "react";
 import ModalNewProject from "./ModalNewProject";
 import Header from "../_components/Header";
+import { useAppSelector } from "@/app/redux";
 
 type Props = {
   activeTab: string;
   setActiveTab: (tabName: string) => void;
+  project: {
+    id: number;
+    name: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    tasks: {
+      id: number;
+      title: string;
+      description: string;
+      status: string;
+      priority: string;
+      tags: string;
+      startDate: string;
+      dueDate: string;
+      points: number | null;
+      projectId: number;
+      authorUserId: number;
+      assignedUserId: number;
+    }[];
+    projectTeams: {
+      id: number;
+      teamId: number;
+      projectId: number;
+    }[];
+  };
 };
+function calculateProgress(start: string, end: string): number {
+  const startDate = new Date(start).getTime();
+  const endDate = new Date(end).getTime();
+  const now = Date.now();
 
-const ProjectHeader = ({ activeTab, setActiveTab }: Props) => {
+  if (now >= endDate) return 100;
+  if (now <= startDate) return 0;
+
+  const total = endDate - startDate;
+  const elapsed = now - startDate;
+  return Math.round((elapsed / total) * 100);
+}
+
+const ProjectHeader = ({ activeTab, setActiveTab, project }: Props) => {
   const [isModalNewProjectOpen, setIsModalNewProjectOpen] = useState(false);
 
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+const taskStats = {
+    total: project.tasks.length,
+    completed: project.tasks.filter(task => task.status === "Completed").length,
+    inProgress: project.tasks.filter(task => task.status === "Work In Progress").length,
+    urgent: project.tasks.filter(task => task.priority === "Urgent").length,
+  };
+
   return (
-    <div className="px-4 xl:px-6">
+    <div className="project-header-container">
       <ModalNewProject
         isOpen={isModalNewProjectOpen}
         onClose={() => setIsModalNewProjectOpen(false)}
       />
-      <div className="pb-6 pt-6 lg:pb-4 lg:pt-8">
+      <div className="header-wrapper">
         <Header
-          name="Product Design Development"
+          name={project.name}
           buttonComponent={
             <button
-              className="flex items-center rounded-md bg-blue-primary px-3 py-2 text-white hover:bg-blue-600"
+              className="primary-button"
               onClick={() => setIsModalNewProjectOpen(true)}
+              aria-label="Create new board"
             >
-              <PlusSquare className="mr-2 h-5 w-5" /> New Boards
+              <PlusSquare className="primary-button-icon" />
+              <span className="whitespace-nowrap">New Project</span>
             </button>
           }
         />
       </div>
+      {/* Project info section */}
+      <div className="px-6 py-5 bg-white/80 backdrop-blur-lg border-b border-gray-200/80 dark:border-gray-700 dark:bg-gray-900/80 rounded-t-lg shadow-sm">
+        <p className="text-gray-800 dark:text-gray-200 text-[15px] mb-4 leading-relaxed max-w-4xl">
+          {project.description}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-sm">
+          {/* Date information */}
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium text-gray-600 dark:text-gray-400">Start:</span>
+              <span className="text-gray-900 dark:text-gray-100 font-medium font-mono tracking-tight">
+                {formatDate(project.startDate)}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <CalendarCheck className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium text-gray-600 dark:text-gray-400">End:</span>
+              <span className="text-gray-900 dark:text-gray-100 font-medium font-mono tracking-tight">
+                {formatDate(project.endDate)}
+              </span>
+            </div>
+          </div>
+
+          {/* Teams information */}
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium text-gray-600 dark:text-gray-400">Teams:</span>
+              <span className="text-gray-900 dark:text-gray-100 font-medium">
+                {project.projectTeams.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Task statistics */}
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium text-gray-600 dark:text-gray-400">Tasks:</span>
+              <span className="text-gray-900 dark:text-gray-100 font-medium">
+                {taskStats.completed}/{taskStats.total}
+              </span>
+            </div>
+          </div>
+
+          {/* Urgent tasks */}
+          {taskStats.urgent > 0 && (
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium text-gray-600 dark:text-gray-400">Urgent:</span>
+                <span className="text-gray-900 dark:text-gray-100 font-medium">
+                  {taskStats.urgent}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Progress indicator - now with more context */}
+          <div className="flex-1 min-w-[200px]">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                Project Progress
+              </span>
+              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                {calculateProgress(project.startDate, project.endDate)}%
+              </span>
+            </div>
+            <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 rounded-full"
+                style={{ width: `${calculateProgress(project.startDate, project.endDate)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* TABS */}
-      <div className="flex flex-wrap-reverse gap-2 border-y border-gray-200 pb-[8px] pt-2 dark:border-stroke-dark md:items-center">
-        <div className="flex flex-1 items-center gap-2 md:gap-4">
+      <div className="tabs-container">
+        <div className="tabs-group">
           <TabButton
             name="Board"
-            icon={<Grid3x3 className="h-5 w-5" />}
+            icon={<Grid3x3 className="tab-button-icon" />}
             setActiveTab={setActiveTab}
             activeTab={activeTab}
           />
           <TabButton
             name="List"
-            icon={<List className="h-5 w-5" />}
+            icon={<List className="tab-button-icon" />}
             setActiveTab={setActiveTab}
             activeTab={activeTab}
           />
           <TabButton
             name="Timeline"
-            icon={<Clock className="h-5 w-5" />}
+            icon={<Clock className="tab-button-icon" />}
             setActiveTab={setActiveTab}
             activeTab={activeTab}
           />
           <TabButton
             name="Table"
-            icon={<Table className="h-5 w-5" />}
+            icon={<Table className="tab-button-icon" />}
             setActiveTab={setActiveTab}
             activeTab={activeTab}
           />
         </div>
         <div className="flex items-center gap-2">
-          <button className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300">
-            <Filter className="h-5 w-5" />
+          <button
+            className="action-button"
+            aria-label="Filter tasks"
+          >
+            <Filter className="action-button-icon" />
           </button>
-          <button className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300">
-            <Share2 className="h-5 w-5" />
+          <button
+            className="action-button"
+            aria-label="Share project"
+          >
+            <Share2 className="action-button-icon" />
           </button>
-          <div className="relative">
+          <div className="search-container">
             <input
               type="text"
               placeholder="Search Task"
-              className="rounded-md border py-1 pl-10 pr-4 focus:outline-none dark:border-dark-secondary dark:bg-dark-secondary dark:text-white"
+              className="search-input"
+              aria-label="Search tasks"
             />
-            <Grid3x3 className="absolute left-3 top-2 h-4 w-4 text-gray-400 dark:text-neutral-500" />
+            <Grid3x3 className="search-icon" />
           </div>
         </div>
       </div>
@@ -101,13 +247,13 @@ const TabButton = ({ name, icon, setActiveTab, activeTab }: TabButtonProps) => {
 
   return (
     <button
-      className={`relative flex items-center gap-2 px-1 py-2 text-gray-500 after:absolute after:-bottom-[9px] after:left-0 after:h-[1px] after:w-full hover:text-blue-600 dark:text-neutral-500 dark:hover:text-white sm:px-2 lg:px-4 ${
-        isActive ? "text-blue-600 after:bg-blue-600 dark:text-white" : ""
-      }`}
+      className="tab-button"
       onClick={() => setActiveTab(name)}
+      aria-current={isActive ? "page" : undefined}
     >
       {icon}
-      {name}
+      <span>{name}</span>
+      <span className="tab-indicator" />
     </button>
   );
 };

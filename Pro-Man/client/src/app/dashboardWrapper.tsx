@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect } from "react";
-import AuthProvider from "./authProvider";
 import StoreProvider, { useAppSelector } from "./redux";
 import Sidebar from "./_components/Sidebar";
 import Navbar from "./_components/Navbar";
@@ -13,23 +12,42 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  },[isDarkMode]);
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+      const darkModeOn = e.matches;
+      document.documentElement.classList.toggle('dark', darkModeOn);
+    };
+
+    const savedMode = localStorage.getItem('darkMode');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialMode = savedMode ? savedMode === 'true' : systemPrefersDark;
+
+    document.documentElement.classList.toggle('dark', initialMode);
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+
+    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    localStorage.setItem('darkMode', String(isDarkMode));
+  }, [isDarkMode]);
 
   return (
-    <div className="flex min-h-screen w-full bg-gray-50 text-gray-900">
-      <Sidebar />
-      <main
-        className={`flex w-full flex-col bg-gray-50 dark:bg-dark-bg ${
-          isSidebarCollapsed ? "" : "md:pl-64"
-        }`}
-      >
-        <Navbar />
-        {children}
+    <div className="dashboard-layout">
+      <div className={`sidebar-container ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+        <Sidebar />
+      </div>
+
+      <main className={`main-content ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}>
+        <div className="navbar">
+          <Navbar />
+        </div>
+
+        <div className="content-container">
+          {children}
+        </div>
       </main>
     </div>
   );
@@ -38,7 +56,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <StoreProvider>
-        <DashboardLayout>{children}</DashboardLayout>
+      <DashboardLayout>{children}</DashboardLayout>
     </StoreProvider>
   );
 };
