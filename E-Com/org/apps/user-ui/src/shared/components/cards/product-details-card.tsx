@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React, { useState } from 'react'
 import Ratings from '../ratings'
-import { Heart, MapPin, X } from 'lucide-react'
+import { Heart, MapPin, ShoppingCart, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import CartIcon from 'apps/user-ui/src/assets/svgs/cartIcon'
 import { useStore } from 'apps/user-ui/src/store'
@@ -39,7 +39,8 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
     : 0
   const handleAddToCart = () => {
     setIsAddingToCart(true)
-    const payload = {
+    setTimeout(() => {
+      const payload = {
       ...data,
       selectedColor,
       selectedSize,
@@ -47,8 +48,8 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
     };
     addToCart(payload, user, location, deviceInfo);
 
-    setActiveImage(0)
-      setIsAddingToCart(false)
+    setIsAddingToCart(false)
+    },1000)
   }
 
   return (
@@ -112,7 +113,7 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
             <div className='relative w-14 h-14 rounded-full border-2 border-white shadow-sm overflow-hidden'>
               {data?.Shop?.avatar ? (
                 <Image
-                  src={data.Shop.avatar}
+                  src={data?.Shop?.avatar?.[0].url}
                   alt={data?.Shop?.name || "Shop logo"}
                   fill
                   className='object-cover'
@@ -236,7 +237,7 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
 
           {/* Quantity & Actions */}
           <div className='mt-8 pt-4 border-t border-gray-200'>
-            <div className='flex items-center gap-4'>
+            <div className='flex items-center justify-between gap-4'>
               <div className='flex items-center border border-gray-300 rounded-lg overflow-hidden'>
                 <button
                   className='px-4 py-2 bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 font-medium'
@@ -257,13 +258,14 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
               </div>
 
               <button
-                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 ${
-                  isAddingToCart ? 'bg-orange-500' : 'bg-orange-600 hover:bg-orange-700'
-                } text-white font-medium rounded-lg transition-colors shadow-sm`}
-                onClick={handleAddToCart}
-                disabled={isInCart}
-              >
-                {isAddingToCart ? (
+              className={` py-3 px-4 rounded-md font-medium flex items-center justify-center gap-2 transition-colors ${
+                isInCart
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#ff5722] hover:bg-[#e64a19] text-white"
+              }`}
+              disabled={isInCart }
+              onClick={handleAddToCart}
+                >{isAddingToCart ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -272,12 +274,10 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
                     Adding...
                   </>
                 ) : (
-                  isInCart?<Link href={`/cart`}>Buy Now</Link>:<>
-                    <CartIcon className="w-5 h-5" />
-                    Add to Cart
-                  </>
+                  <><ShoppingCart size={18} />
+              {isInCart ? "Added to Cart" : "Add to Cart"}</>
                 )}
-              </button>
+            </button>
 
               <button
                 className={`p-3 rounded-full transition-colors ${isWishlisted ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
