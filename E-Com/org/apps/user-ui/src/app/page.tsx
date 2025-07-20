@@ -44,7 +44,6 @@ const Page = () => {
               <ProductCard
                 key={product.id}
                 product={product}
-                className='transition-all duration-300 hover:scale-[1.02] hover:shadow-md'
               />
             ))}
           </div>
@@ -62,7 +61,6 @@ const Page = () => {
               <ProductCard
                 key={product.id}
                 product={product}
-                className='transition-all duration-300 hover:scale-[1.02] hover:shadow-md'
               />
             ))}
           </div>

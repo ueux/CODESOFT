@@ -36,6 +36,8 @@ model users {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   shopReviews shopsReviews[]
+
+  orders orders[]
 }
 
 model shopsReviews {
@@ -69,6 +71,8 @@ model shops {
   updatedAt     DateTime       @updatedAt
 
   products products[]
+
+  followers followers[]
 }
 
 model sellers {
@@ -169,4 +173,41 @@ model productAnalytics {
   lastViewedAt   DateTime
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model followers {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  shopId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  shop shops @relation(fields: [shopId], references: [id])
+
+  @@unique([ shopId])
+}
+
+model orders {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderNumber String   @unique
+  userId      String   @db.ObjectId
+  shopId      String   @db.ObjectId
+  items       Json     // Array of product items with details
+  subtotal    Float
+  tax         Float
+  shipping    Float
+  total       Float
+  status      String   @default("pending") // pending, processing, shipped, delivered, cancelled
+  paymentMethod String
+  paymentStatus String @default("unpaid") // unpaid, paid, refunded
+  shippingAddress Json
+  billingAddress  Json
+  trackingNumber String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user users @relation(fields: [userId], references: [id])
 }

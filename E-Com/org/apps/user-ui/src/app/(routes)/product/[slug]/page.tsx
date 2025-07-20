@@ -7,8 +7,9 @@ async function fetchProductDetails(slug: string) {
   const response = await axiosInstance.get(`/product/api/get-product/${slug}`)
   return response.data.product
 }
-export async function generateMetadata({ params }: { params: { slug: string } }) :Promise<Metadata>{
-  const product = await fetchProductDetails(params.slug)
+export async function generateMetadata ({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await fetchProductDetails(slug)
   return {
     title: `${product?.title} | E-Com`,
     description: product?.short_description,
@@ -26,8 +27,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     }
   }
 }
-const ProductPage = async({ params }: { params: { slug: string } }) => {
-  const productDetails = await fetchProductDetails(params.slug)
+interface PageProps {
+  params: { slug: string };
+}
+const ProductPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
+  const { slug } = await params;
+  const productDetails = await fetchProductDetails(slug)
   return (<ProductDetails productDetails={productDetails}/>
   )
 }

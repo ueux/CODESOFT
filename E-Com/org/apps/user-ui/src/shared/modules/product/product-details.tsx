@@ -214,11 +214,11 @@ console.error("Failed to fetch filtered products",error)
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <span className="text-3xl font-bold text-orange-500">
-                  ${productDetails?.sale_price || productDetails?.regular_price || "0.00"}
+                  ₹{productDetails?.sale_price || productDetails?.regular_price || "0.00"}
                 </span>
                 {productDetails?.regular_price && productDetails?.sale_price && (
                   <span className="text-gray-400 line-through">
-                    ${productDetails.regular_price}
+                    ₹{productDetails.regular_price}
                   </span>
                 )}
                 {discountPercentage > 0 && (

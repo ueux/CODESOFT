@@ -16,7 +16,7 @@ const Header = () => {
 
   return (
     <div className="w-full bg-white sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl px-4 py-4 mx-auto flex items-center justify-between">
+      <div className="max-w-7xl px-4 py-2.5 mx-auto flex items-center justify-between">
         {/* Logo */}
         <div className="flex-shrink-0">
           <Link href="/">
@@ -101,7 +101,7 @@ const Header = () => {
       </div>
 
       {/* Bottom Border and Navigation */}
-      <div className="border-b border-gray-100" />
+      <div className="border-b border-gray-100 " />
       <HeaderBottom />
     </div>
   );
