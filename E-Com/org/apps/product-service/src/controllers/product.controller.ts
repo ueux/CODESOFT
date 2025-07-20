@@ -408,7 +408,7 @@ export const getFilteredEvents = async (req: Request, res: Response, next: NextF
                 gte: parsedPriceRange[0],
                 lte:parsedPriceRange[1],
             },
-            NOT:{starting_date:null}
+            NOT:[{starting_date:null}]
         }
         if (categories && (categories as String[]).length > 0) {
             filters.category={in:Array.isArray(categories)?categories:String(categories).split((","))}
@@ -419,7 +419,7 @@ export const getFilteredEvents = async (req: Request, res: Response, next: NextF
         if (colors && (colors as String[]).length > 0) {
             filters.colors = { in: Array.isArray(colors) ? colors :[colors]}
         }
-        const [products, total] = await Promise.all([
+        const [offers, total] = await Promise.all([
             prisma.products.findMany({
                 where: filters,
                 skip,
@@ -434,7 +434,7 @@ export const getFilteredEvents = async (req: Request, res: Response, next: NextF
         const totalPages=Math.ceil(total/parsedLimit)
          res.status(201).json({
             success: true,
-             products,
+             offers,
              pagination: {
                  total,
                  page: parsedPage,
@@ -500,7 +500,7 @@ export const getFilteredEvents = async (req: Request, res: Response, next: NextF
 
 // export const getTopShops = async (req: Request, res: Response, next: NextFunction) => {
 //     try {
-//         const topShopsData = await prisma.orders.groupedBy({
+//         const topShopsData = await prisma.orders.groupBy({
 //             by: ["shopId"],
 //             _sum: { total: true },
 //             orderBy:{_sum:{total:"desc"}},
