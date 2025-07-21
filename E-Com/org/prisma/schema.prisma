@@ -92,7 +92,6 @@ model sellers {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  notifications notifications[] @relation("NotificationReceiver")
 }
 
 model site_config {
@@ -231,12 +230,11 @@ model notifications {
   title         String
   message       String
   creatorId     String   @db.ObjectId
-  receiverId    String   @db.ObjectId
+  receiverId    String
   redirect_link String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   // Relations
   creator  users   @relation("NotificationCreator", fields: [creatorId], references: [id])
-  receiver sellers   @relation("NotificationReceiver", fields: [receiverId], references: [id])
 }

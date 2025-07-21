@@ -17,7 +17,7 @@ app.use(cors({
 
 app.post("/api/create-order", bodyParser.raw({ type: "application/json" }),
   (req, res, next) => {
-    (req as any).rawBody = req.body
+    (req as any).rawBody =  req.body.toString('utf8');
     next()
   },
   createOrder
@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
   res.send({ message: 'Welcome to order-service!' });
 });
 
-app.use("/",router)
+app.use("/api",router)
 
 app.use(errorMiddleware)
 const port = process.env.PORT || 6004;

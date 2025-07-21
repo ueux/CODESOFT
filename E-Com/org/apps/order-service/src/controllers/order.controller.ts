@@ -11,99 +11,132 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion:"2025-06-30.basil"
 })
 export const createPaymentIntent = async (req: any, res: Response, next: NextFunction) => {
-    const { amount, sellerStripeAccountId, sessionId }=req.body;
-    const customerAmount = Math.round(amount * 100)
-    const platformFee = Math.floor(customerAmount * 0.1)
+    const { amount, sellerStripeAccountId, sessionId } = req.body;
+
+    // Validate amount
+    if (typeof amount !== 'number' || isNaN(amount)) {
+        return next(new ValidationError("Invalid payment amount"));
+    }
+
     try {
+        const customerAmount = Math.round(amount * 100); // Convert to paise for INR
+        const platformFee = Math.floor(customerAmount * 0.1); // 10% platform fee
+
+        // Validate stripe account ID
+        if (!sellerStripeAccountId) {
+            return next(new ValidationError("Invalid seller stripe account"));
+        }
+
         const paymentIntent = await stripe.paymentIntents.create({
             amount: customerAmount,
-            currency: "inr",
+            currency: "usd",
             payment_method_types: ["card"],
             application_fee_amount: platformFee,
             transfer_data: {
-                destination:sellerStripeAccountId
+                destination: sellerStripeAccountId
             },
+  on_behalf_of: sellerStripeAccountId,
             metadata: {
                 sessionId,
-                userId:req.user.id
+                userId: req.user.id
             }
-        })
-        res.send({clientSecret:paymentIntent.client_secret})
+        });
+
+        res.send({ clientSecret: paymentIntent.client_secret });
     } catch (error) {
-        next(error)
+        next(error);
     }
 }
 
 export const createPaymentSession = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const { cart, selectedWddressId, coupon } = req.body;
+        const { cart, selectedAddressId, coupon } = req.body;
         const userId = req.user.id;
+
+        // Validate cart
         if (!cart || !Array.isArray(cart) || cart.length === 0) {
-            return next(new ValidationError("Cart is empty or invalid"))
+            return next(new ValidationError("Cart is empty or invalid"));
         }
+
+        // Normalize and sort cart for comparison
         const normalizedCart = JSON.stringify(cart.map((item: any) => ({
             id: item.id,
             quantity: item.quantity,
             sale_price: item.sale_price,
-            shopId:item.shopId,
-            selectedOptions:item.selectedOptions
-        })).sort((a, b) => a.id.localCompare(b.id)))
-        const keys = await redis.keys("payment-session:*")
+            shopId: item.shopId,
+            selectedOptions: item.selectedOptions
+        })).sort((a, b) => a.id.localeCompare(b.id)));
+
+        // Check existing sessions
+        const keys = await redis.keys("payment-session:*");
         for (const key of keys) {
-            const data = await redis.get(key)
+            const data = await redis.get(key);
             if (data) {
-                const session = JSON.parse(data)
+                const session = JSON.parse(data);
                 if (session.userId === userId) {
                     const existingCart = JSON.stringify(session.cart.map((item: any) => ({
                         id: item.id,
                         quantity: item.quantity,
                         sale_price: item.sale_price,
-                        shopId:item.shopId,
-                        selectedOptions:item.selectedOptions
-                    })).sort((a: any, b: any) => a.id.localCompare(b.id)))
+                        shopId: item.shopId,
+                        selectedOptions: item.selectedOptions
+                    })).sort((a: any, b: any) => a.id.localeCompare(b.id)));
+
                     if (existingCart === normalizedCart) {
-                        return res.status(200).json({sessionId:key.split(":")[1]})
-                    } else {
-                        await redis.del(key)
+                        return res.status(200).json({ sessionId: key.split(":")[1] });
                     }
+                    await redis.del(key);
                 }
             }
         }
-        const uniqueShopIds = [...new Set(cart.map((item: any) => item.shopId))]
+
+        // Get shop and seller info
+        const uniqueShopIds = [...new Set(cart.map((item: any) => item.shopId))];
         const shops = await prisma.shops.findMany({
-            where: {
-                id:{in:uniqueShopIds}
-            },
+            where: { id: { in: uniqueShopIds } },
             select: {
                 id: true,
                 sellerId: true,
-                sellers: {
-                    select: {
-                        stripeId:true
-                    }
-                }
+                sellers: { select: { stripeId: true } }
             }
-        })
-        const sellerData = shops.map((shop) => ({
-            shopId: shop.id,
-            sellerId: shop.sellerId,
-            stripeAccountId:shop?.sellers?.stripeId
-        }))
+        });
+
+        // Calculate total amount with proper validation
         const totalAmount = cart.reduce((total: number, item: any) => {
-            return total+item.quantity*item.sale_price
-        })
-        const sessionId = crypto.randomUUID()
+            // Validate item price and quantity
+            if (typeof item.sale_price !== 'number' || isNaN(item.sale_price)) {
+                throw new ValidationError(`Invalid price for product ${item.id}`);
+            }
+            if (typeof item.quantity !== 'number' || isNaN(item.quantity)) {
+                throw new ValidationError(`Invalid quantity for product ${item.id}`);
+            }
+            return total + (item.quantity * item.sale_price);
+        }, 0); // Initialize with 0
+
+        // Validate total amount
+        if (isNaN(totalAmount)) {
+            throw new ValidationError("Invalid total amount calculation");
+        }
+
+        // Create session data
+        const sessionId = crypto.randomUUID();
         const sessionData = {
             userId,
             cart,
-            sellers: sellerData,
+            sellers: shops.map((shop) => ({
+                shopId: shop.id,
+                sellerId: shop.sellerId,
+                stripeAccountId: shop?.sellers?.stripeId
+            })),
             totalAmount,
-            shippingAddressId: selectedWddressId || null,
+            shippingAddressId: selectedAddressId || null,
             coupon: coupon || null,
-        }
-        await redis.setex(`payment-session:${sessionId}`,600,JSON.stringify((sessionData)) )
+        };
+
+        await redis.setex(`payment-session:${sessionId}`, 600, JSON.stringify(sessionData));
+        res.status(201).json({ sessionId });
     } catch (error) {
-next(error)
+        next(error);
     }
 }
 
@@ -134,6 +167,10 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
         const stripeSinature = req.headers['stripe-signature']
         if (!stripeSinature) return res.status(400).send("Missing Stripe signature")
         const rawBody = (req as any).rawBody
+        if (!rawBody) {
+            return res.status(400).send("Missing request body");
+        }
+
         let event
         try {
             event =stripe.webhooks.constructEvent(rawBody,stripeSinature,process.env.STRIPE_WEBHOOK_SECRET!)
@@ -169,7 +206,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                 const orderItems = shopGrouped[shopId]
                 let orderTotal = orderItems.reduce((total: number, item: any) => {
                     return total + item.quantity * item.sale_price
-                })
+                },0)
                 if (coupon && coupon.discountedProductId && orderItems.some((item: any) => item.id === coupon.discountedProductId)) {
                     const discountedItem = orderItems.find((item: any) => item.id === coupon.discountedProductId)
                     if (discountedItem) {
@@ -192,8 +229,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                             create: orderItems.map((item: any) => ({
                                 productId: item.id,
                                 quantity: item.quantity,
-                                price: item.price,
-                                selectedOptions:item.selectedOptions
+                                price: item.sale_price,
+                                selectedOptions: item.selectedOptions || {}
                             }))
                         }
                     }
