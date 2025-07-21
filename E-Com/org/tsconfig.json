@@ -10,9 +10,6 @@
       "path": "./apps/auth-service"
     },
     {
-      "path": "./apps/api-gateway-e2e"
-    },
-    {
       "path": "./apps/api-gateway"
     },
     {
@@ -25,10 +22,10 @@
       "path": "./apps/product-service"
     },
     {
-      "path": "./apps/kafka-service-e2e"
+      "path": "./apps/kafka-service"
     },
     {
-      "path": "./apps/kafka-service"
+      "path": "./apps/order-service"
     }
   ]
 }

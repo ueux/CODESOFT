@@ -38,6 +38,8 @@ model users {
   shopReviews shopsReviews[]
 
   orders orders[]
+
+  notifications notifications[] @relation("NotificationCreator")
 }
 
 model shopsReviews {
@@ -73,6 +75,8 @@ model shops {
   products products[]
 
   followers followers[]
+
+  orders orders[]
 }
 
 model sellers {
@@ -87,6 +91,8 @@ model sellers {
   shopId       String?  @db.ObjectId
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  notifications notifications[] @relation("NotificationReceiver")
 }
 
 model site_config {
@@ -147,6 +153,8 @@ model products {
   updatedAt             DateTime      @updatedAt
   shopId                String        @db.ObjectId
   Shop                  shops         @relation(fields: [shopId], references: [id])
+
+  orderItem orderItems[]
 }
 
 
@@ -183,31 +191,52 @@ model followers {
   updatedAt DateTime @updatedAt
 
   // Relations
-  shop shops @relation(fields: [shopId], references: [id])
-
-  @@unique([ shopId])
+  Shops shops @relation(fields: [shopId], references: [id])
 }
 
 model orders {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  orderNumber String   @unique
-  userId      String   @db.ObjectId
-  shopId      String   @db.ObjectId
-  items       Json     // Array of product items with details
-  subtotal    Float
-  tax         Float
-  shipping    Float
-  total       Float
-  status      String   @default("pending") // pending, processing, shipped, delivered, cancelled
-  paymentMethod String
-  paymentStatus String @default("unpaid") // unpaid, paid, refunded
-  shippingAddress Json
-  billingAddress  Json
-  trackingNumber String?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String     @db.ObjectId
+  shopId           String     @db.ObjectId
+  items            orderItems[]
+  total            Float
+  status           String     @default("pending")
+  shippingAddressId String?    @db.ObjectId
+  couponCode       String?
+  discountAmount   Float      @default(0)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
   // Relations
-  user users @relation(fields: [userId], references: [id])
+  User             users       @relation(fields: [userId], references: [id])
+  Shop             shops      @relation(fields: [shopId], references: [id])
+}
+
+model orderItems {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  orderId         String    @db.ObjectId
+  productId       String    @db.ObjectId
+  quantity        Int
+  price           Float
+  selectedOptions Json
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  Order           orders     @relation(fields: [orderId], references: [id])
+  Product         products   @relation(fields: [productId], references: [id])
+}
+
+model notifications {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  message       String
+  creatorId     String   @db.ObjectId
+  receiverId    String   @db.ObjectId
+  redirect_link String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  creator  users   @relation("NotificationCreator", fields: [creatorId], references: [id])
+  receiver sellers   @relation("NotificationReceiver", fields: [receiverId], references: [id])
 }
