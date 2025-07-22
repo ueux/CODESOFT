@@ -20,8 +20,8 @@ router.post("/create-stripe-link", createStripeConnectLink)
 router.post("/login-seller", loginSeller)
 router.get("/logged-in-seller", isAuthenticated,isSeller,getSeller)
 router.get("/shipping-addresses", isAuthenticated,getUserAddresses)
-router.get("/add-address", isAuthenticated,addUserAddress)
-router.get("/delete-address/:addressId", isAuthenticated,deleteUserAddress)
+router.post("/add-address", isAuthenticated,addUserAddress)
+router.delete("/delete-address/:addressId", isAuthenticated,deleteUserAddress)
 
 
 export default router;

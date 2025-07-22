@@ -345,7 +345,7 @@ next(error)
 
 export const addUserAddress = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const userId = req.user?.Id
+        const userId = req.user?.id
         const { label, name, street, city, zip, country, isDefault } = req.body;
         if (!label || !name || !street || !city || !zip || !country) return next(new ValidationError("All fields are required"))
         if (isDefault) {
@@ -359,7 +359,7 @@ export const addUserAddress = async (req: any, res: Response, next: NextFunction
                 }
             })
         }
-        const newAddress = await prisma.addresss.create({
+        const newAddress = await prisma.address.create({
             data: {
                 userId,
                 label,

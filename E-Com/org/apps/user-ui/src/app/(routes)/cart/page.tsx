@@ -1,5 +1,6 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import useDeviceTracking from 'apps/user-ui/src/hooks/useDeviceTracking'
 import useLocationTracking from 'apps/user-ui/src/hooks/useLocationTracking'
 import useUser from 'apps/user-ui/src/hooks/useUser'
@@ -9,7 +10,7 @@ import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 
 const Cart = () => {
@@ -53,35 +54,21 @@ const Cart = () => {
         }
     }
 
-    const staticAddresses = [
-        {
-            id: "1",
-            name: "Home",
-            street: "123 Main St",
-            city: "New York",
-            state: "NY",
-            country: "USA",
-            zip: "10001"
-        },
-        {
-            id: "2",
-            name: "Work",
-            street: "456 Business Ave",
-            city: "New York",
-            state: "NY",
-            country: "USA",
-            zip: "10002"
-        },
-        {
-            id: "3",
-            name: "Summer House",
-            street: "789 Beach Rd",
-            city: "Hamptons",
-            state: "NY",
-            country: "USA",
-            zip: "11937"
+    const { data: addresses, isLoading } = useQuery({
+    queryKey: ["shipping-addresses"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/api/shipping-addresses");
+      return res.data.addresses;
+    },
+    });
+    useEffect(() => {
+        if (addresses.length > 0 && !selectedAddressId) {
+            const defaultAddr = addresses.find((addr: any) => addr.isDefault)
+            if (defaultAddr) {
+                setSelectedAddressId(defaultAddr.id)
+            }
         }
-    ];
+    },[addresses,selectedAddressId])
     return (
         <div className='w-full bg-white'>
             <div className='md:w-[80%] w-[95%] mx-auto min-h-screen'>
@@ -162,12 +149,15 @@ const Cart = () => {
                                         required
                                     >
                                         <option value="">Select an address</option>
-                                        {staticAddresses.map((address) => (
+                                        {addresses.map((address:any) => (
                                             <option key={address.id} value={address.id}>
                                                 {address.name} - {address.street}, {address.city}, {address.state} {address.zip}
                                             </option>
                                         ))}
                                     </select>
+                                    {addresses?.length === 0 && (<p className='text-sm text-slate-800'>
+                                        Please add an address from profileto create an order!
+                                    </p>)}
                                     </div>
                                 <hr className="my-4 text-slate-200" />
                                 <div className="mb-4">

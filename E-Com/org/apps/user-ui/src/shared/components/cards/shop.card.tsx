@@ -11,7 +11,7 @@ interface ShopCardProps {
         name?: string;
         followers?: any[];
         address?: string;
-        rating?: number;
+        ratings?: number;
         category?: string;
     };
 }
@@ -54,7 +54,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
                     </span>
                 </p>
 
-                {/* Address + Rating */}
+                {/* Address + Ratings */}
                 <div className="flex items-center justify-center text-sm text-gray-600 mt-2 gap-4 mb-4">
                     {shop?.address && (
                         <span className="flex items-center gap-1 max-w-[140px]">
@@ -64,7 +64,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
                     )}
                     <span className="flex items-center gap-1">
                         <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                        <span className="font-medium">{shop?.rating?.toFixed(1) ?? "N/A"}</span>
+                        <span className="font-medium">{shop?.ratings?.toFixed(1) ?? "N/A"}</span>
                     </span>
                 </div>
 

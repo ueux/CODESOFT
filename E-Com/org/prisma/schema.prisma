@@ -20,7 +20,6 @@ model images {
   userId     String?   @db.ObjectId
   shopId     String?   @db.ObjectId
   productsId String?   @db.ObjectId
-  users      users?     @relation(fields: [userId], references: [id])
   products   products?  @relation(fields: [productsId], references: [id])
 }
 
@@ -30,15 +29,17 @@ model users {
   email       String         @unique
   password    String?
   name        String
-  avatar      images[]
+  avatar      String?
   following   String[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   shopReviews shopsReviews[]
 
   orders orders[]
+  addresses address[] @relation("UserAddresses")
 
   notifications notifications[] @relation("NotificationCreator")
+
 }
 
 model shopsReviews {
@@ -164,6 +165,8 @@ model userAnalytics {
   country      String?
   city         String?
   device       String?
+  recommendations Json?
+  lastTrained DateTime @default(now())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -199,7 +202,7 @@ model orders {
   items            orderItems[]
   total            Float
   status           String     @default("pending")
-  shippingAddressId String?    @db.ObjectId
+  shippingAddressId String    @db.ObjectId
   couponCode       String?
   discountAmount   Float      @default(0)
   createdAt        DateTime   @default(now())
@@ -208,6 +211,8 @@ model orders {
   // Relations
   User             users       @relation(fields: [userId], references: [id])
   Shop             shops      @relation(fields: [shopId], references: [id])
+
+  Address address @relation(fields: [shippingAddressId], references: [id])
 }
 
 model orderItems {
@@ -236,4 +241,47 @@ model notifications {
 
   // Relations
   creator  users   @relation("NotificationCreator", fields: [creatorId], references: [id])
+}
+enum addressTypes {
+  Home
+  Work
+  Other
+}
+model address {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  label     addressTypes
+  name      String
+  street    String
+  city      String
+  zip       String
+  country   String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  orders orders[]
+  user   users   @relation("UserAddresses", fields: [userId], references: [id])
+
+}
+
+model uniqueShopVisitors{
+  id String @id @default(auto())@map("_id") @db.ObjectId
+  shopId String @db.ObjectId
+  userId String @db.ObjectId
+  visitedAt DateTime @default(now())
+
+  @@unique([shopId,userId])
+}
+
+model shopAnalytics{
+  id String @id @default(auto())@map("_id") @db.ObjectId
+  totalVisitors Int @default(0)
+  countryStats Json?
+  cityStats Json?
+  deviceStats Json?
+  lastVisitedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
