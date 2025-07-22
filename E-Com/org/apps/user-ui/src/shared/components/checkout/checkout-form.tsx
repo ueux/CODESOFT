@@ -26,6 +26,8 @@ const CheckoutForm = ({
     0
   );
 
+  const discountAmount = coupon?.discountAmount || 0;
+  const finalTotal = total - discountAmount;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -69,7 +71,7 @@ const CheckoutForm = ({
               <span>
                 {item.quantity} x {item.title}
               </span>
-              <span>${(item.quantity * item.sale_price).toFixed(2)}</span>
+              <span>₹{(item.quantity * item.sale_price).toFixed(2)}</span>
             </div>
           ))}
 
@@ -82,9 +84,10 @@ const CheckoutForm = ({
             </div>
           )}
 
-          <div className="flex justify-between font-semibold pt-2 border-t border-t-gray-200">
+
+          <div className="flex justify-between font-bold pt-2 border-t border-gray-200 text-gray-800">
             <span>Total</span>
-            <span>₹{(total - coupon?coupon?.discountAmount:0).toFixed(2)}</span>
+            <span>₹{finalTotal.toFixed(2)}</span>
           </div>
         </div>
 

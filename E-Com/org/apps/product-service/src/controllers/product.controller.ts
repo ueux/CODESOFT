@@ -287,7 +287,54 @@ const baseFilter: Prisma.productsWhereInput = {
                 images: true,
                 Shop: {
                     include: {
-                    avatar:true,
+          reviews: {
+            orderBy: {
+              createdAt: 'desc'
+            }
+          }
+        }
+            },
+            },
+            where: baseFilter,
+            orderBy:{totalSales:"desc"},
+        }),
+            prisma.products.count({ where: baseFilter }),
+            prisma.products.findMany({ take: 10, where: baseFilter ,orderBy})
+        ])
+        res.status(201).json({
+            success: true,
+            products,
+            top10By: type === "latest" ? "latest" : "topSales",
+            top10Products,
+            total,
+            currentPage: page,
+            totalPages:Math.ceil(total/limit)
+        })
+    } catch (error) {
+        return next(error)
+    }
+}
+
+export const getAllEvents=async (req:Request,res:Response,next:NextFunction)=> {
+    try {
+        const page = parseInt(req.query.page as string) || 1
+        const limit = parseInt(req.query.limit as string) || 20
+        const skip = (page - 1) * limit
+        const type = req.query.type
+const baseFilter: Prisma.productsWhereInput = {
+      AND: [
+        { starting_date: {not:null} },
+        { ending_date: {not:null} },
+      ],
+        };
+        const orderBy: Prisma.productsOrderByWithRelationInput = type === "latest" ? { createdAt: "desc" as Prisma.SortOrder } : { totalSales: "desc" as Prisma.SortOrder }
+        const [products, total, top10Products] = await Promise.all([prisma.products.findMany({
+            skip,
+            take:limit,
+            include: {
+                images: true,
+                Shop: {
+                    include: {
           reviews: {
             orderBy: {
               createdAt: 'desc'
@@ -446,99 +493,99 @@ export const getFilteredEvents = async (req: Request, res: Response, next: NextF
     }
 }
 
-// export const getFilteredShops = async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//         const {
-//             categories = [],
-//             countries = [],
-//             page = 1,
-//             limit=12,
-//         } = req.query
-//         const parsedPage = Number(page)
-//         const parsedLimit = Number(limit)
-//         const skip = (parsedPage - 1) * parsedLimit
-//         const filters: Record<string, any> = {
-//         }
-//         if (countries && String(countries).length > 0) {
-//             filters.countries = {
-//                 in:Array.isArray(countries)?countries:String(countries).split(",")
-//             }
-//         }
-//         if (categories && String(categories).length > 0) {
-//             filters.categories = {
-//                 in:Array.isArray(categories)?categories:String(categories).split(",")
-//             }
-//         }
-//         const [shops, total] = await Promise.all([
-//             prisma.shops.findMany({
-//                 where: filters,
-//                 skip,
-//                 take: parsedLimit,
-//                 include: {
-//                     sellers: true,
-//                     followers: true,
-//                     products:true
+export const getFilteredShops = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {
+            categories = [],
+            countries = [],
+            page = 1,
+            limit=12,
+        } = req.query
+        const parsedPage = Number(page)
+        const parsedLimit = Number(limit)
+        const skip = (parsedPage - 1) * parsedLimit
+        const filters: Record<string, any> = {
+        }
+        if (countries && String(countries).length > 0) {
+            filters.country = {
+                in:Array.isArray(countries)?countries:String(countries).split(",")
+            }
+        }
+        if (categories && String(categories).length > 0) {
+            filters.category = {
+                in:Array.isArray(categories)?categories:String(categories).split(",")
+            }
+        }
+        const [shops, total] = await Promise.all([
+            prisma.shops.findMany({
+                where: filters,
+                skip,
+                take: parsedLimit,
+                include: {
+                    sellers: true,
+                    followers: true,
+                    products:true
 
-//             }
-//             }),
-//             prisma.shops.count({where:filters})
-//         ])
-//         const totalPages=Math.ceil(total/parsedLimit)
-//          res.status(201).json({
-//             success: true,
-//              shops,
-//              pagination: {
-//                  total,
-//                  page: parsedPage,
-//                  totalPages
-//             }
-//         })
-//     } catch (error) {
-//         return next(error)
-//     }
-// }
+            }
+            }),
+            prisma.shops.count({where:filters})
+        ])
+        const totalPages=Math.ceil(total/parsedLimit)
+         res.status(201).json({
+            success: true,
+             shops,
+             pagination: {
+                 total,
+                 page: parsedPage,
+                 totalPages
+            }
+        })
+    } catch (error) {
+        return next(error)
+    }
+}
 
-// export const getTopShops = async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//         const topShopsData = await prisma.orders.groupBy({
-//             by: ["shopId"],
-//             _sum: { total: true },
-//             orderBy:{_sum:{total:"desc"}},
-//             take:10
-//         })
-//         const shopIds=topShopsData.map((item:any)=>item.shopId)
-//         const shops = await prisma.shops.findMany({
-//             where: {
-//                 id:{in:shopIds}
-//             },
-//             select: {
-//                 id: true,
-//                 name: true,
-//                 avatar: true,
-//                 coverBanner: true,
-//                 address: true,
-//                 ratings: true,
-//                 followers: true,
-//                 category:true
-//             }
-//         })
-//         const enrichedShops=shops.map((shop)=>{
-//             const salesData = topShopsData.find((s:any) => s.shopId === shop.id)
-//             return {
-//                 ...shop,
-//                 totalSales:salesData?._sum.total??0
-//             }
-//         })
-//         const top10Shops = enrichedShops.sort((a, b) => b.totalSales - a.totalSales).slice(0, 10)
+export const getTopShops = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const topShopsData = await prisma.orders.groupBy({
+            by: ["shopId"],
+            _sum: { total: true },
+            orderBy:{_sum:{total:"desc"}},
+            take:10
+        })
+        const shopIds=topShopsData.map((item:any)=>item.shopId)
+        const shops = await prisma.shops.findMany({
+            where: {
+                id:{in:shopIds}
+            },
+            select: {
+                id: true,
+                name: true,
+                avatar: true,
+                coverBanner: true,
+                address: true,
+                ratings: true,
+                followers: true,
+                category:true
+            }
+        })
+        const enrichedShops=shops.map((shop)=>{
+            const salesData = topShopsData.find((s:any) => s.shopId === shop.id)
+            return {
+                ...shop,
+                totalSales:salesData?._sum.total??0
+            }
+        })
+        const top10Shops = enrichedShops.sort((a, b) => b.totalSales - a.totalSales).slice(0, 10)
 
-//          return res.status(201).json({
-//             success: true,
-//              shops:top10Shops
-//         })
-//     } catch (error) {
-//         return next(error)
-//     }
-// }
+         return res.status(201).json({
+            success: true,
+             shops:top10Shops
+        })
+    } catch (error) {
+        return next(error)
+    }
+}
 
 export const searchProducts = async (
     req: Request,
