@@ -79,7 +79,7 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
     }
 
     try {
-      const result = await createTask({
+       await createTask({
         title: formData.title,
         description: formData.description,
         status: formData.status,
@@ -109,27 +109,8 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
       });
       setErrors({});
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to create task:", error);
-
-      let errorMessage = "Failed to create task";
-      const fieldErrors: Record<string, string> = {};
-
-      // Handle different error formats
-      if (error.data) {
-        // Handle API validation errors
-        if (error.data.errors) {
-          error.data.errors.forEach((err: { field: string; message: string }) => {
-            fieldErrors[err.field] = err.message;
-          });
-        }
-        errorMessage = error.data.message || errorMessage;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      setErrors(fieldErrors);
-      toast.error(errorMessage);
     }
   };
 
@@ -245,6 +226,8 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
               className={`${inputBaseStyles} ${errors.startDate ? 'border-red-500' : ''}`}
               value={formData.startDate}
               onChange={handleChange}
+              title="Start Date"
+
             />
             {errors.startDate && <p className={errorStyles}>{errors.startDate}</p>}
           </div>
@@ -261,6 +244,8 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
               value={formData.dueDate}
               onChange={handleChange}
               min={formData.startDate}
+              title="Due Date"
+
             />
             {errors.dueDate && <p className={errorStyles}>{errors.dueDate}</p>}
           </div>
@@ -294,6 +279,7 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
               name="assignedUserId"
               className={`${inputBaseStyles} ${errors.assignedUserId ? 'border-red-500' : ''}`}
               placeholder="Assignee user ID"
+              title="Assignee user ID"
               value={formData.assignedUserId}
               onChange={handleChange}
             />

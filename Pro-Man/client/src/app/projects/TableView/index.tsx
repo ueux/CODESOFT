@@ -3,7 +3,7 @@ import { useAppSelector } from "@/app/redux";
 import { useGetTasksQuery } from "@/state/api";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import React from "react";
-import { Circle, Flag, Loader2, Tag, User } from "lucide-react";
+import {  Flag, Loader2, Tag, User } from "lucide-react";
 
 type Props = {
   id: string;
@@ -207,18 +207,8 @@ const TableView = ({ id, setIsModalNewTaskOpen }: Props) => {
         <DataGrid
           rows={tasks}
           columns={columns}
-          pageSize={10}
-          rowsPerPageOptions={[10, 25, 50]}
           checkboxSelection
-          disableSelectionOnClick
           sx={getDataGridStyles()}
-          components={{
-            NoRowsOverlay: () => (
-              <div className="flex h-full w-full items-center justify-center">
-                No tasks found
-              </div>
-            ),
-          }}
         />
       </div>
     </div>

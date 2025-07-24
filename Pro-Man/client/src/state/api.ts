@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
+import { AuthUser, fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
 export interface Project {
   id: number;
@@ -89,6 +89,43 @@ export const api = createApi({
   reducerPath: "api",
   tagTypes: ["Projects", "Tasks", "Users", "Teams"],
   endpoints: (build) => ({
+    getAuthUser: build.query<{ user: AuthUser; userSub: string | undefined; userDetails: User },void>({
+  queryFn: async (_, _queryApi, _extraOptions, fetchWithBQ) => {
+    try {
+      const user = await getCurrentUser();
+      const session = await fetchAuthSession();
+      if (!session) {
+        return {
+          error: {
+            status: 401,
+            statusText: "Unauthorized",
+            data: "No session found",
+          },
+        };
+      }
+
+      const { userSub } = session;
+      const{accessToken}=session.tokens??{}
+      const userDetailsResponse = await fetchWithBQ(`users/${userSub}`);
+      if (userDetailsResponse.error) {
+        return { error: userDetailsResponse.error };
+      }
+
+      const userDetails = userDetailsResponse.data as User;
+
+      return { data: { user,accessToken, userSub, userDetails } };
+    } catch (err) {
+      return {
+        error: {
+          status: 500,
+          statusText: "Internal Server Error",
+          data: (err as Error).message || "Unknown error occurred",
+        },
+      };
+    }
+  },
+}),
+
     getProjects: build.query<Project[], void>({
       query: () => "projects",
       providesTags: ["Projects"],
@@ -107,6 +144,13 @@ export const api = createApi({
         result
           ? result.map(({ id }) => ({ type: "Tasks" as const, id }))
           : [{ type: "Tasks" as const }],
+    }),
+    getTasksByUser: build.query<Task[], number>({
+      query: (userId) => `tasks/user/${userId}`,
+      providesTags: (result, error, userId) =>
+        result
+          ? result.map(({ id }) => ({ type: "Tasks", id }))
+          : [{ type: "Tasks", id: userId }],
     }),
     createTask: build.mutation<Task, Partial<Task>>({
       query: (task) => ({
@@ -149,4 +193,6 @@ export const {
   useSearchQuery,
   useGetUsersQuery,
   useGetTeamsQuery,
+  useGetTasksByUserQuery,
+  useGetAuthUserQuery,
 } = api;

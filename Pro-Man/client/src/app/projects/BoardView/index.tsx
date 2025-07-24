@@ -60,7 +60,7 @@ const TaskColumn = ({
   setIsModalNewTaskOpen,
   isDarkMode,
 }: TaskColumnProps) => {
-  const [{ isOver }, drop] = useDrop(() => ({
+  const [{ isOver },] = useDrop(() => ({
     accept: "task",
     drop: (item: { id: number }) => moveTask(item.id, status),
     collect: (monitor) => ({
@@ -86,7 +86,6 @@ const TaskColumn = ({
 
   return (
     <div
-      ref={drop}
       className={`rounded-lg transition-all duration-200 ${isOver ? (isDarkMode ? "bg-gray-900/50" : "bg-blue-50") : ""} ${
         statusBgColors[status as keyof typeof statusBgColors]
       }`}
@@ -136,8 +135,8 @@ type TaskProps = {
   isDarkMode: boolean;
 };
 
-const Task = ({ task, isDarkMode }: TaskProps) => {
-  const [{ isDragging }, drag] = useDrag(() => ({
+const Task = ({ task }: TaskProps) => {
+  const [{ isDragging },] = useDrag(() => ({
     type: "task",
     item: { id: task.id },
     collect: (monitor) => ({
@@ -167,7 +166,6 @@ const Task = ({ task, isDarkMode }: TaskProps) => {
 
   return (
     <div
-      ref={drag}
       className={`transform rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 ${
         isDragging ? "opacity-50 scale-95" : "opacity-100 scale-100"
       }`}
@@ -175,7 +173,7 @@ const Task = ({ task, isDarkMode }: TaskProps) => {
       {task.attachments?.[0] && (
         <div className="relative h-32 w-full overflow-hidden rounded-t-lg">
           <Image
-            src={`/${task.attachments[0].fileURL}`}
+            src={`https://pm--s3--images0.s3.ap-south-1.amazonaws.com/public/${task.attachments[0].fileURL}`}
             alt={task.attachments[0].fileName}
             fill
             className="object-cover"
@@ -226,7 +224,7 @@ const Task = ({ task, isDarkMode }: TaskProps) => {
             {task.assignee && (
               <div className="relative h-8 w-8">
                 <Image
-                  src={`/${task.assignee.profilePictureUrl}`}
+                  src={`https://pm--s3--images0.s3.ap-south-1.amazonaws.com/public/${task.assignee.profilePictureUrl}`}
                   alt={task.assignee.username}
                   fill
                   className="rounded-full border-2 border-white object-cover dark:border-gray-800"
@@ -236,7 +234,7 @@ const Task = ({ task, isDarkMode }: TaskProps) => {
             {task.author && (
               <div className="relative h-8 w-8">
                 <Image
-                  src={`/${task.author.profilePictureUrl}`}
+                  src={`https://pm--s3--images0.s3.ap-south-1.amazonaws.com/public/${task.author.profilePictureUrl}`}
                   alt={task.author.username}
                   fill
                   className="rounded-full border-2 border-white object-cover dark:border-gray-800"

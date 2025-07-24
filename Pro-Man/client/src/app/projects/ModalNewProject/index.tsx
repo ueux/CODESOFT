@@ -24,7 +24,7 @@ const ModalNewProject = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     }
 
     try {
-      const result = await createProject({
+       await createProject({
         name: formData.name.trim(),
         description: formData.description.trim(),
         startDate: formatISO(new Date(formData.startDate)),
@@ -33,13 +33,8 @@ const ModalNewProject = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
       toast.success("Project created successfully!");
       handleClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to create project:", error);
-      toast.error(
-        error.data?.message ||
-        error.message ||
-        "Failed to create project. Please try again."
-      );
     }
   };
 

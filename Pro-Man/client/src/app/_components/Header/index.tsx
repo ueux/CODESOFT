@@ -1,5 +1,4 @@
 import React from "react";
-import { useAppSelector } from "@/app/redux";
 
 type Props = {
   name: string;
@@ -25,11 +24,14 @@ const Header = ({ name, buttonComponent, isSmallText = false, description }: Pro
       {buttonComponent && (
         <div className="flex-shrink-0">
           {React.isValidElement(buttonComponent)
-            ? React.cloneElement(buttonComponent, {
-                className: `primary-button ${
-                  buttonComponent.props.className || ''
-                }`
-              })
+            ? React.cloneElement(
+                buttonComponent as React.ReactElement<React.ComponentPropsWithoutRef<'button'>>,
+                {
+                  className: `primary-button ${
+                    (buttonComponent.props as React.ComponentPropsWithoutRef<'button'>).className || ''
+                  }`
+                }
+              )
             : buttonComponent}
         </div>
       )}

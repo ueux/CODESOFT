@@ -96,7 +96,6 @@ const Timeline = () => {
               barBackgroundColor={isDarkMode ? "#4f46e5" : "#6366f1"}
               barProgressColor={isDarkMode ? "#818cf8" : "#a5b4fc"}
               barCornerRadius={6}
-              barBorderRadius={6}
               fontSize={isDarkMode ? "14px" : "13px"}
               arrowColor={isDarkMode ? "#94a3b8" : "#64748b"}
               arrowIndent={20}

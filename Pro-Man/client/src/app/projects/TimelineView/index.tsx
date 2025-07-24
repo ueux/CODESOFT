@@ -120,7 +120,6 @@ const Timeline = ({ id, setIsModalNewTaskOpen }: Props) => {
             arrowIndent={20}
             todayColor={isDarkMode ? '#ef4444' : '#dc2626'}
             rowHeight={44}
-            listCellHeight={44}
             headerHeight={50}
             ganttHeight={Math.min(800, ganttTasks.length * 44 + 100)}
             preStepsCount={1}
@@ -172,9 +171,6 @@ const CustomTooltip = ({ task }: { task: Task }) => {
       <p className="text-sm">
         {task.start.toLocaleDateString()} - {task.end.toLocaleDateString()}
       </p>
-      {task.description && (
-        <p className="mt-1 text-sm">{task.description}</p>
-      )}
       <div className="mt-2 flex items-center">
         <span className="mr-2 text-sm">Progress:</span>
         <div className="h-2 w-full rounded-full bg-gray-300">

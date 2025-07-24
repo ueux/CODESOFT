@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useRef } from "react";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import {
@@ -24,17 +25,18 @@ import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
 const createNoopStorage = () => {
   return {
-    getItem(_key: string) {
+    getItem(_key: string): Promise<string | null> {
       return Promise.resolve(null);
     },
-    setItem(_key: string, value: any) {
+    setItem(_key: string, value: string): Promise<string> {
       return Promise.resolve(value);
     },
-    removeItem(_key: string) {
+    removeItem(_key: string): Promise<void> {
       return Promise.resolve();
     },
   };
 };
+
 
 const storage =
   typeof window === "undefined"
@@ -45,7 +47,7 @@ const persistConfig = {
   key: "root",
   storage,
   version: 1,
-  whitelist: ["global"], // Only persist the global slice
+  whitelist: ["global"],
 };
 
 const rootReducer = combineReducers({
@@ -77,12 +79,12 @@ export type AppDispatch = AppStore["dispatch"];
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
-export default function StoreProvider({
-  children,
-}: {
+interface StoreProviderProps {
   children: React.ReactNode;
-}) {
-  const storeRef = useRef<AppStore>();
+}
+
+export default function StoreProvider({ children }: StoreProviderProps) {
+  const storeRef = useRef<AppStore | null>(null); // ✅ Fixed here
   if (!storeRef.current) {
     storeRef.current = makeStore();
   }

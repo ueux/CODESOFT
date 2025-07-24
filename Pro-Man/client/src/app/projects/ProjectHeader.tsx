@@ -6,48 +6,56 @@ import {
   Clock,
   Filter,
   Grid3x3,
-  List,
+  List as ListIcon,
   PlusSquare,
   Share2,
-  Table,
+  Table as TableIcon,
   Users,
 } from "lucide-react";
 import React, { useState } from "react";
 import ModalNewProject from "./ModalNewProject";
 import Header from "../_components/Header";
-import { useAppSelector } from "@/app/redux";
+
+interface Task {
+  id: number;
+  title: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  tags?: string;
+  startDate?: string;
+  dueDate?: string;
+  points?: number | null;
+  projectId: number;
+  authorUserId?: number;
+  assignedUserId?: number;
+}
+
+interface ProjectTeam {
+  id: number;
+  teamId: number;
+  projectId: number;
+}
+
+interface Project {
+  id: number;
+  name: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  tasks?: Task[];
+  projectTeams?: ProjectTeam[];
+}
 
 type Props = {
   activeTab: string;
   setActiveTab: (tabName: string) => void;
-  project: {
-    id: number;
-    name: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    tasks: {
-      id: number;
-      title: string;
-      description: string;
-      status: string;
-      priority: string;
-      tags: string;
-      startDate: string;
-      dueDate: string;
-      points: number | null;
-      projectId: number;
-      authorUserId: number;
-      assignedUserId: number;
-    }[];
-    projectTeams: {
-      id: number;
-      teamId: number;
-      projectId: number;
-    }[];
-  };
+  project: Project;
 };
-function calculateProgress(start: string, end: string): number {
+
+function calculateProgress(start?: string, end?: string): number {
+  if (!start || !end) return 0;
+
   const startDate = new Date(start).getTime();
   const endDate = new Date(end).getTime();
   const now = Date.now();
@@ -63,16 +71,17 @@ function calculateProgress(start: string, end: string): number {
 const ProjectHeader = ({ activeTab, setActiveTab, project }: Props) => {
   const [isModalNewProjectOpen, setIsModalNewProjectOpen] = useState(false);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Not set";
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-const taskStats = {
-    total: project.tasks.length,
-    completed: project.tasks.filter(task => task.status === "Completed").length,
-    inProgress: project.tasks.filter(task => task.status === "Work In Progress").length,
-    urgent: project.tasks.filter(task => task.priority === "Urgent").length,
+  const taskStats = {
+    total: project.tasks?.length || 0,
+    completed: project.tasks?.filter(task => task.status === "Completed").length || 0,
+    inProgress: project.tasks?.filter(task => task.status === "Work In Progress").length || 0,
+    urgent: project.tasks?.filter(task => task.priority === "Urgent").length || 0,
   };
 
   return (
@@ -98,31 +107,37 @@ const taskStats = {
       </div>
       {/* Project info section */}
       <div className="px-6 py-5 bg-white/80 backdrop-blur-lg border-b border-gray-200/80 dark:border-gray-700 dark:bg-gray-900/80 rounded-t-lg shadow-sm">
-        <p className="text-gray-800 dark:text-gray-200 text-[15px] mb-4 leading-relaxed max-w-4xl">
-          {project.description}
-        </p>
+        {project.description && (
+          <p className="text-gray-800 dark:text-gray-200 text-[15px] mb-4 leading-relaxed max-w-4xl">
+            {project.description}
+          </p>
+        )}
 
         <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-sm">
           {/* Date information */}
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <div className="flex items-center gap-1.5">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Start:</span>
-              <span className="text-gray-900 dark:text-gray-100 font-medium font-mono tracking-tight">
-                {formatDate(project.startDate)}
-              </span>
+          {project.startDate && (
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium text-gray-600 dark:text-gray-400">Start:</span>
+                <span className="text-gray-900 dark:text-gray-100 font-medium font-mono tracking-tight">
+                  {formatDate(project.startDate)}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="flex items-center gap-2">
-            <CalendarCheck className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <div className="flex items-center gap-1.5">
-              <span className="font-medium text-gray-600 dark:text-gray-400">End:</span>
-              <span className="text-gray-900 dark:text-gray-100 font-medium font-mono tracking-tight">
-                {formatDate(project.endDate)}
-              </span>
+          {project.endDate && (
+            <div className="flex items-center gap-2">
+              <CalendarCheck className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium text-gray-600 dark:text-gray-400">End:</span>
+                <span className="text-gray-900 dark:text-gray-100 font-medium font-mono tracking-tight">
+                  {formatDate(project.endDate)}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Teams information */}
           <div className="flex items-center gap-2">
@@ -130,7 +145,7 @@ const taskStats = {
             <div className="flex items-center gap-1.5">
               <span className="font-medium text-gray-600 dark:text-gray-400">Teams:</span>
               <span className="text-gray-900 dark:text-gray-100 font-medium">
-                {project.projectTeams.length}
+                {project.projectTeams?.length || 0}
               </span>
             </div>
           </div>
@@ -159,23 +174,25 @@ const taskStats = {
             </div>
           )}
 
-          {/* Progress indicator - now with more context */}
-          <div className="flex-1 min-w-[200px]">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Project Progress
-              </span>
-              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                {calculateProgress(project.startDate, project.endDate)}%
-              </span>
+          {/* Progress indicator */}
+          {(project.startDate && project.endDate) && (
+            <div className="flex-1 min-w-[200px]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                  Project Progress
+                </span>
+                <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                  {calculateProgress(project.startDate, project.endDate)}%
+                </span>
+              </div>
+              <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 rounded-full"
+                  style={{ width: `${calculateProgress(project.startDate, project.endDate)}%` }}
+                />
+              </div>
             </div>
-            <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 rounded-full"
-                style={{ width: `${calculateProgress(project.startDate, project.endDate)}%` }}
-              />
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -190,7 +207,7 @@ const taskStats = {
           />
           <TabButton
             name="List"
-            icon={<List className="tab-button-icon" />}
+            icon={<ListIcon className="tab-button-icon" />}
             setActiveTab={setActiveTab}
             activeTab={activeTab}
           />
@@ -202,7 +219,7 @@ const taskStats = {
           />
           <TabButton
             name="Table"
-            icon={<Table className="tab-button-icon" />}
+            icon={<TableIcon className="tab-button-icon" />}
             setActiveTab={setActiveTab}
             activeTab={activeTab}
           />
@@ -247,13 +264,13 @@ const TabButton = ({ name, icon, setActiveTab, activeTab }: TabButtonProps) => {
 
   return (
     <button
-      className="tab-button"
+      className={`tab-button ${isActive ? 'active' : ''}`}
       onClick={() => setActiveTab(name)}
       aria-current={isActive ? "page" : undefined}
     >
       {icon}
       <span>{name}</span>
-      <span className="tab-indicator" />
+      {isActive && <span className="tab-indicator" />}
     </button>
   );
 };

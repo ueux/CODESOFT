@@ -2,7 +2,7 @@ import { Task } from "@/state/api";
 import { format } from "date-fns";
 import Image from "next/image";
 import React from "react";
-import { Clock, MessageSquare, User, Tag, Flag, Circle, CheckCircle } from "lucide-react";
+import { Clock, MessageSquare, Tag, Flag, Circle, CheckCircle } from "lucide-react";
 import { useAppSelector } from "@/app/redux";
 
 type Props = {
@@ -63,7 +63,7 @@ const TaskCard = ({ task, className = "" }: Props) => {
       {task.attachments?.[0] && (
         <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
           <Image
-            src={`/${task.attachments[0].fileURL}`}
+            src={`https://pm--s3--images0.s3.ap-south-1.amazonaws.com/public/${task.attachments[0].fileURL}`}
             alt={task.attachments[0].fileName}
             fill
             className="object-cover"
@@ -129,7 +129,7 @@ const TaskCard = ({ task, className = "" }: Props) => {
                 <div className="flex items-center">
                   <div className="relative mr-2 h-6 w-6">
                     <Image
-                      src={`/${task.assignee.profilePictureUrl}`}
+                      src={`https://pm--s3--images0.s3.ap-south-1.amazonaws.com/public/${task.assignee.profilePictureUrl}`}
                       alt={task.assignee.username}
                       fill
                       className="rounded-full border object-cover"
