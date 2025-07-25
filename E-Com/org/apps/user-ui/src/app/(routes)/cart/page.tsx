@@ -25,7 +25,8 @@ const Cart = () => {
     const [discountPercent, setDiscountPercentage] = useState(0)
     const [discountPrice, setDiscountPrice] = useState(0)
     const [couponCode, setCouponCode] = useState("")
-    const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);    const decreaseQuantity = (id: string) => {
+    const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+    const decreaseQuantity = (id: string) => {
         useStore.setState((state: any) => ({
             cart: state.cart.map((item: any) => item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item)
         }))
@@ -62,7 +63,8 @@ const Cart = () => {
     },
     });
     useEffect(() => {
-        if (addresses.length > 0 && !selectedAddressId) {
+        console.log(addresses)
+        if (addresses?.length > 0 && !selectedAddressId) {
             const defaultAddr = addresses.find((addr: any) => addr.isDefault)
             if (defaultAddr) {
                 setSelectedAddressId(defaultAddr.id)
@@ -78,7 +80,7 @@ const Cart = () => {
                     <span className='inline-block p-[1.5px] mx-1 bg-[#a8acb0] rounded-full'></span>
                     <span className='text-[#55585b]'>Cart</span>
                 </div>
-                {cart.length === 0 ? (<div className='text-center text-gray-600 text-lg'>Your wishlist is empty! Start adding products.</div>) :
+                {cart.length === 0 ? (<div className='text-center text-gray-600 text-lg'>Your Cart is empty! Start adding products.</div>) :
                     (<div className='lg:flex items-start gap-10'>
                         <table className='w-full lg:w-[70%] border-collapse'>
                             <thead className='bg-[#f1f1f4] rounded'>
@@ -149,7 +151,7 @@ const Cart = () => {
                                         required
                                     >
                                         <option value="">Select an address</option>
-                                        {addresses.map((address:any) => (
+                                        {addresses?.map((address:any) => (
                                             <option key={address.id} value={address.id}>
                                                 {address.name} - {address.street}, {address.city}, {address.state} {address.zip}
                                             </option>
@@ -159,15 +161,6 @@ const Cart = () => {
                                         Please add an address from profileto create an order!
                                     </p>)}
                                     </div>
-                                <hr className="my-4 text-slate-200" />
-                                <div className="mb-4">
-                                    <h4 className="mb-[7px] font-medium text-[15px]">Select Payment Method</h4>
-                                    <select className="w-full p-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500" value={selectedAddressId ?? ""}
-                                        onChange={(e) => setSelectedAddressId(e.target.value)}>
-                                        <option value={"credit_card"}>Online Payment</option>
-                                        <option value={"cash_on_delivery"}>Cash on Delivery</option>
-                                    </select>
-                                </div>
                                 <hr className="my-4 text-slate-200" />
                                 <div className="flex justify-between items-center text-center text-[#010f1c] text-[20px] font-[550] pb-3">
                                     <span className="font-jost">Total</span>

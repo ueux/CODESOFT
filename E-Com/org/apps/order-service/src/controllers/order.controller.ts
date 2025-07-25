@@ -1,10 +1,9 @@
-import { ValidationError } from "@packages/error-handler";
+import { NotFoundError, ValidationError } from "@packages/error-handler";
 import prisma from "@packages/libs/prisma";
 import redis from "@packages/libs/redis";
 import { NextFunction, Request, Response } from "express";
 import Stripe from "stripe"
 import crypto from "crypto"
-import { error } from "console";
 import { sendEmail } from "../utils/sendMail";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -337,6 +336,139 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
         res.status(200).json({received:true})
     } catch (error) {
         console.log(error)
+        return next(error)
+    }
+}
+
+
+export const getSellerOrders= async(req:any,res:Response,next:NextFunction)=>{
+    try{
+        const shop=await prisma.shops.findUnique({
+            where:{
+                sellerId:req.seller.id
+            }
+        })
+
+        const orders=await prisma.orders.findMany({
+            where:{
+                shopId:shop?.id
+            },
+            include: {
+                User: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar:true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt:"desc"
+            }
+        })
+
+        res.status(201).json({
+            success: true,
+            orders
+        })
+
+    } catch (error) {
+        return next(error)
+    }
+}
+
+export const getOrderDetails = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const orderId=req.params.orderId
+        const order=await prisma.orders.findUnique({
+            where:{
+                id:orderId
+            },
+            include: {
+                items: true,
+                Shop:true
+            }
+        })
+        if(!order)return next(new NotFoundError("Order not found with this id!"))
+        const shippingAddress = order.shippingAddressId ? await prisma.address.findUnique({
+            where: {
+            id:order?.shippingAddressId
+            }
+        }) : null
+        const coupon = order.couponCode ? await prisma?.discount_codes.findUnique({
+            where: {
+                discountCode_sellerId: {
+                    discountCode: order.couponCode,
+                    sellerId: order.Shop.sellerId
+                }
+            }
+        }) : null
+        const productIds=order.items.map((item)=>item.productId)
+        const products = await prisma.products.findMany({
+            where: {
+                id: { in: productIds }
+            },
+            select: {
+                id: true,
+                title: true,
+                images: {
+                select: {
+                    url: true,
+                },
+                },
+            },
+        });
+        const productMap=new Map(products.map((p)=>[p.id,p]))
+
+        const items = order?.items?.map((item) => ({
+            ...item,
+            selectedOptions: item.selectedOptions,
+            product: productMap.get(item.productId) || null,
+        }));
+
+        res.status(201).json({
+            success: true,
+            order:{...order,items,shippingAddress,couponCode:coupon}
+        })
+
+    } catch (error) {
+        return next(error)
+    }
+}
+
+export const updateOrderStatus = async (req: any, res: Response, next: NextFunction) => {
+    try{
+        const { orderId } = req.params;
+        const { deliveryStatus } = req.body
+        if (!deliveryStatus || !orderId) return res.status(400).json({ error: "Missing order Id or delivery status" })
+        const allowedStatuses = [
+            "Ordered",
+            "Packed",
+            "Shipped",
+            "Out for Delivery",
+            "Delivered"
+        ]
+        if (!allowedStatuses.includes(deliveryStatus)) return next(new ValidationError("Invalid delivery status"))
+        const existingOrder = await prisma.orders.findUnique({
+            where: { id: orderId }
+        })
+        if(!existingOrder)return next (new NotFoundError("Order not found!"))
+        const updatededOrder = await prisma.orders.update({
+            where: { id: orderId },
+            data: {
+                deliveryStatus,
+                updatedAt:new Date()
+            }
+        })
+
+        res.status(201).json({
+            success: true,
+            message:"Delivery status updated successfully",
+            order:updatededOrder
+        })
+
+    } catch (error) {
         return next(error)
     }
 }

@@ -282,6 +282,11 @@ const ProductList = () => {
           onRestore={() => restoreMutation.mutate(selectedProduct?.id)}
         />
       )}
+      {
+          !isLoading && products?.length === 0 && (<p className='text-center py-3 text-white'>
+              No products found!
+          </p>)
+      }
     </div>
   );
 };

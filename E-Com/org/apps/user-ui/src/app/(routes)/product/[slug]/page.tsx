@@ -27,9 +27,6 @@ export async function generateMetadata ({ params }: { params: Promise<{ slug: st
     }
   }
 }
-interface PageProps {
-  params: { slug: string };
-}
 const ProductPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
   const productDetails = await fetchProductDetails(slug)

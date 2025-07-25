@@ -71,6 +71,8 @@ model shops {
   sellers       sellers        @relation(fields: [sellerId], references: [id])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  isDeleted     Boolean        @default(false)     // Added missing field
+  deletedAt     DateTime?  
 
   products products[]
 
@@ -202,7 +204,7 @@ model orders {
   items            orderItems[]
   total            Float
   status           String     @default("pending")
-  shippingAddressId String    @db.ObjectId
+  shippingAddressId String?    @db.ObjectId
   couponCode       String?
   discountAmount   Float      @default(0)
   createdAt        DateTime   @default(now())
@@ -212,7 +214,6 @@ model orders {
   User             users       @relation(fields: [userId], references: [id])
   Shop             shops      @relation(fields: [shopId], references: [id])
 
-  Address address @relation(fields: [shippingAddressId], references: [id])
 }
 
 model orderItems {
@@ -261,7 +262,6 @@ model address {
   updatedAt DateTime @updatedAt
 
   // Relations
-  orders orders[]
   user   users   @relation("UserAddresses", fields: [userId], references: [id])
 
 }

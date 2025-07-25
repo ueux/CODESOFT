@@ -34,6 +34,6 @@ app.use("/api",router)
 app.use(errorMiddleware)
 const port = process.env.PORT || 6004;
 const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+  console.log(`[ Order service ready ] Listening at http://localhost:${port}/api`);
 });
 server.on('error', console.error);
