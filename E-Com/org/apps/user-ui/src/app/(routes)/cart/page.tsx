@@ -11,7 +11,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import toast from 'react-hot-toast'
+import {toast} from 'sonner'
 
 const Cart = () => {
     const router = useRouter()
@@ -22,10 +22,12 @@ const Cart = () => {
     const removeFromCart = useStore((state: any) => state.removeFromCart)
     const [loading, setLoading] = useState(false)
     const [discountedProductId, setDiscountedProductId] = useState("")
-    const [discountPercent, setDiscountPercentage] = useState(0)
-    const [discountPrice, setDiscountPrice] = useState(0)
+    const [discountPercent, setDiscountPercent] = useState(0)
+    const [discountAmount, setDiscountAmount] = useState(0)
     const [couponCode, setCouponCode] = useState("")
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+    const [error, setError] = useState("")
+    const [storedCouponCode,setStoredCouponCode]=useState("")
     const decreaseQuantity = (id: string) => {
         useStore.setState((state: any) => ({
             cart: state.cart.map((item: any) => item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item)
@@ -39,12 +41,21 @@ const Cart = () => {
     const subTotal = cart?.reduce((total: number, item: any) => total + (item.quantity * item.sale_price), 0)
 
     const createPaymentSession = async () => {
+        if (addresses?.length === 0) {
+            toast.error("Please set your delivery address")
+            return
+        }
         setLoading(true);
         try {
             const res = await axiosInstance.post("/order/api/create-payment-session", {
                 cart,
                 selectedAddressId,
-                coupon: {},
+                coupon: {
+                    code: storedCouponCode,
+                    discountAmount,
+                    discountPercent,
+                    discountedProductId
+                },
             })
             const sessionId = res.data.sessionId
             router.push(`/checkout?sessionId=${sessionId}`)
@@ -52,6 +63,37 @@ const Cart = () => {
             toast.error("Something went wrong.Please try again")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const couponCodeApplyHandler =async () => {
+        setError("")
+        if (!couponCode.trim()) {
+            setError("Coupon coe is required!")
+            return
+        }
+        try {
+            const res = await axiosInstance.put("/order/api/verify-coupon", {
+                couponCode: couponCode.trim(),
+                cart
+            })
+            if (res.data.valid) {
+                setStoredCouponCode(couponCode.trim())
+                setDiscountAmount(parseFloat(res.data.discountAmount))
+                setDiscountPercent(res.data.discount)
+                setDiscountedProductId(res.data.discountedProductId)
+                setCouponCode("")
+            } else {
+                setDiscountAmount(0)
+                setDiscountPercent(0)
+                setDiscountedProductId("")
+                setError(res.data.message||"Coupon not valid for any items in cart")
+            }
+        } catch (error:any) {
+                setDiscountAmount(0)
+                setDiscountPercent(0)
+                setDiscountedProductId("")
+                setError(error?.response?.data?.message)
         }
     }
 
@@ -120,13 +162,13 @@ const Cart = () => {
                             </tbody>
                         </table>
                         <div className='p-6 shadow-md w-full lg:w-[30%] bg-[#f9f9f9] rounded-lg'>
-                            {discountPrice > 0 && (<div className='flex justify-between items-center text-[#010f1c] text-base font-mediun pb-1'>
+                            {discountAmount > 0 && (<div className='flex justify-between items-center text-[#010f1c] text-base font-mediun pb-1'>
                                 <span className="font-jost">Discount ({discountPercent}%)</span>
-                                <span className="text-green-600">- ₹{discountPrice.toFixed(2)}</span>
+                                <span className="text-green-600">- ₹{discountAmount.toFixed(2)}</span>
                             </div>)}
                             <div className='flex justify-between items-center text-[#010f1c] text-[20px] font-[550] pb-3'>
                                 <span className="font-jost">Subtotal</span>
-                                <span>₹{(subTotal - discountPrice).toFixed(2)}</span>
+                                <span>₹{(subTotal - discountAmount).toFixed(2)}</span>
                             </div>
                             <hr className="my-4 text-slate-200" />
                             <div className='mb-4'>
@@ -137,10 +179,10 @@ const Cart = () => {
                                     <input type="text" onChange={(e: any) => setCouponCode(e.target.value)} placeholder="Enter coupon code" value={couponCode}
                                         className="w-full p-2 border-gray-200 rounded-l-md focus:border-blue-500" />
                                     <button className='bg-blue-500 cursor-pointer text-white px-4 rounded-r-md hover:bg-blue-600 transition-all'
-                                    //   onClick={() => couponCodeApply}
+                                      onClick={() => couponCodeApplyHandler()}
                                     >Apply</button>
-                                    {/* {error && (<p className='text-sm pt-2 text-red-500'>{error}</p>)} */}
                                 </div>
+                                {error && (<p className='text-sm pt-2 text-red-500'>{error}</p>)}
                                 <hr className="my-4 text-slate-200" />
                                 <div className="mb-4">
                                     <h4 className="mb-[7px] font-medium text-[15px]">Select Shipping Address</h4>
@@ -164,7 +206,7 @@ const Cart = () => {
                                 <hr className="my-4 text-slate-200" />
                                 <div className="flex justify-between items-center text-center text-[#010f1c] text-[20px] font-[550] pb-3">
                                     <span className="font-jost">Total</span>
-                                    <span>₹{(subTotal - discountPrice).toFixed(2)} </span>
+                                    <span>₹{(subTotal - discountAmount).toFixed(2)} </span>
                                 </div>
                                 <button onClick={createPaymentSession} disabled={loading} className='w-full flex items-center justify-center gap-2 cursor-pointer mt-4 py-3 bg-[#010f1c] text-white hover:bg-[#0989FF] translation-all rounded-lg'>
                                     {loading && <Loader2 className="animate-spin w-5 h-5" />}

@@ -14,7 +14,7 @@ import CustomSpecifications from 'packages/components/custom-specifications'
 import Input from 'packages/components/input'
 import React, { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import toast from 'react-hot-toast'
+import {toast} from 'sonner'
 
 interface UploadedImage{
     fileId: string;

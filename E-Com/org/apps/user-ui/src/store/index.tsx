@@ -45,7 +45,6 @@ export const useStore = create<Store>()(persist((set, get) => ({
             return {cart:[...state.cart,{...product,quantity:product.quantity,user,location, deviceInfo}]}
         })
         if (user?.id && location && deviceInfo) {
-            console.log("hi")
             sendKafkaEvent({
                 userId: user?.id,
                 productId: product?.id,

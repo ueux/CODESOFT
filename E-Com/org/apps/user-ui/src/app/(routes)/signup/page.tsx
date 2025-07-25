@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import axios, { AxiosError } from "axios";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 type FormData = {
   name: string;

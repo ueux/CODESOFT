@@ -1,6 +1,8 @@
 'use client'
 import React, { useState } from 'react'
-import { Query, QueryClient,QueryClientProvider } from '@tanstack/react-query'
+import { Query, QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import {Toaster} from "sonner"
+
 const Providers = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -13,7 +15,8 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
       <div>
           <QueryClientProvider client={queryClient}>
-              {children}
+        {children}
+        <Toaster/>
           </QueryClientProvider>
     </div>
   )

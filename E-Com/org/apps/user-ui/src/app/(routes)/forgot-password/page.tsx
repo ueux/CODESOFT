@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 
 type FormData = {
   email: string;

@@ -8,7 +8,7 @@ import Link from 'next/link'
 import Input from 'packages/components/input'
 import React, { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 
 
 
