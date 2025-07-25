@@ -1,7 +1,7 @@
 'use client'
 import useSeller from 'apps/seller-ui/src/hooks/useSeller'
 import useSidebar from 'apps/seller-ui/src/hooks/useSiderbar'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 import Box from '../box'
 import { Sidebar } from './sidebar.styles'
@@ -12,15 +12,24 @@ import { HomeIcon } from 'apps/seller-ui/src/assets/icons/home'
 import SidebarMenu from './sidebar.menu'
 import { BellPlus, BellRing, CalendarPlus, ListOrdered, LogOut, Mail, PackageSearch, Settings, SquarePlus, TicketPercent } from 'lucide-react'
 import Payment from 'apps/seller-ui/src/assets/icons/payment'
+import axiosInstance from 'apps/seller-ui/src/utils/axiosInstance'
+import { useQueryClient } from '@tanstack/react-query'
 
 const SidebarBarWrapper = () => {
   const { activeSidebar, setActiveSidebar } = useSidebar()
   const pathName = usePathname()
   const { seller } = useSeller()
+  const queryClient = useQueryClient()
+  const router=useRouter()
   useEffect(() => {
     setActiveSidebar(pathName)
   },[pathName,setActiveSidebar])
-  const getIconColor=(route:string)=>activeSidebar===route?"#0085ff":"#969696"
+  const getIconColor = (route: string) => activeSidebar === route ? "#0085ff" : "#969696"
+  const logOutHandler = async () => {
+    await axiosInstance.get("/api/logout-seller");
+    queryClient.invalidateQueries({ queryKey: ["seller"] });
+    router.push("/login");
+  };
   return (
     <Box css={{ height: "100vh", zIndex: 202, position: "sticky", padding: "8px", top: "0", overflow: "scroll", scrollbarWidth: "none" }} className='sidebar-wrapper'>
       <Sidebar.Header>

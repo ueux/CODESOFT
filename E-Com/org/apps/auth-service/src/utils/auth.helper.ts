@@ -19,13 +19,13 @@ export const validateRegistrationData = (data: any, userType: "user" | "seller")
 
 export const checkOtpRestrictions =async (email: string, next: NextFunction) => {
     if(await redis.get(`otp_lock:${email}`)){
-        return  next(new ValidationError("Acount locked due to multiple failed OTP attempts. Please try again after 30 minutes"));
+        throw new ValidationError("Acount locked due to multiple failed OTP attempts. Please try again after 30 minutes")
     }
     if (await redis.get(`otp_spam_lock:${email}`)) {
-        return next(new ValidationError("You have reached the maximum number of OTP requests. Please wait 1 hour before requesting again."));
+    throw new ValidationError("You have reached the maximum number of OTP requests. Please wait 1 hour before requesting again.")
     }
     if (await redis.get(`opt_cooldown:${email}`)) {
-        return next(new ValidationError("Please wait 1 minute before requesting a new OTP!"));
+    throw new ValidationError("Please wait 1 minute before requesting a new OTP!")
     }
 
 }
@@ -35,7 +35,7 @@ export const trackOtpRequest = async (email: string, next: NextFunction) => {
     let otpRequests = parseInt((await redis.get(otpRequestKey)) || "0");
     if (otpRequests >= 2) {
         await redis.set(`otp_spam_lock:${email}`, "locked", "EX", 3600); //lock for one hour
-        return next(new ValidationError("Too many OTP requests. Please wait 1 hour before requesting again."))
+        throw new ValidationError("Too many OTP requests. Please wait 1 hour before requesting again.")
     }
     await redis.set(otpRequestKey,otpRequests+1,"EX",3600)
 }
@@ -74,10 +74,10 @@ export const handleForgotPassword = async (req: any, res: any, next: NextFunctio
     try {
         const { email } = req.body;
         if (!email) {
-            return next(new ValidationError("Email is required!"));
+            throw (new ValidationError("Email is required!"));
         }
         if (!emailRegex.test(email)) {
-            return next(new ValidationError("Invalid email format!"));
+            throw (new ValidationError("Invalid email format!"));
         }
         const user = userType === "user" ? await prisma.users.findUnique({ where: { email } }): await prisma.sellers.findUnique({ where: { email } });
         if (!user) {
@@ -102,7 +102,7 @@ export const verifyForgotPasswordOtp = async (req: any, res: any, next: NextFunc
             throw new ValidationError("Enail and OTP are required!");
         }
         if (!emailRegex.test(email)) {
-            return next(new ValidationError("Invalid email format!"));
+            throw new ValidationError("Invalid email format!");
         }
         await verifyOtp(email, otp, next);
         res.status(200).json({
