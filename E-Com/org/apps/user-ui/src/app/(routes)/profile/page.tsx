@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle,
   Clock,
@@ -27,6 +27,9 @@ import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 import QuickActionCard from "apps/user-ui/src/shared/components/cards/quick-action.card";
 import ProfileTabContent from "apps/user-ui/src/shared/components/profile-content/profile-tab";
 import ShippingAddressSeciton from "apps/user-ui/src/shared/components/profile-content/shipping-address-tab";
+import OrdersTable from "apps/user-ui/src/shared/components/profile-content/orders-table";
+import ChangePassword from "apps/user-ui/src/shared/components/profile-content/change-password";
+import useRequireAuth from "apps/user-ui/src/hooks/useRequiredAuth";
 
 const NavItem = ({
   label,
@@ -64,8 +67,17 @@ const Page = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isLoading } = useUser();
-
+  const { user, isLoading } = useRequireAuth();
+  const { data: orders = [] } = useQuery({
+    queryKey: ["user-order"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/order/api/get-user-orders")
+      return res.data.orders
+    }
+  })
+  const totalOrders = orders.length
+  const processingOrders=orders.filter((o:any)=>o?.deliveryStatus!=="Delivered" && o?.deliveryStatus!=="Cancelled").length
+  const completedOrders=orders.filter((o:any)=>o?.deliveryStatus==="Delivered").length
   const queryTab = searchParams.get("active") || "Profile";
   const [activeTab, setActiveTab] = useState(queryTab);
 
@@ -102,9 +114,9 @@ const Page = () => {
 
         {/* Profile Overview Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
-          <StatCard title="Total Orders" count={10} Icon={Clock} />
-          <StatCard title="Processing Orders" count={4} Icon={Truck} />
-          <StatCard title="Completed Orders" count={5} Icon={CheckCircle} />
+          <StatCard title="Total Orders" count={totalOrders} Icon={Clock} />
+          <StatCard title="Processing Orders" count={processingOrders} Icon={Truck} />
+          <StatCard title="Completed Orders" count={completedOrders} Icon={CheckCircle} />
         </div>
 
         {/* Sidebar and Content Layout */}
@@ -163,9 +175,11 @@ const Page = () => {
             {/* Profile Info */}
             <div className="bg-white p-6 rounded-md shadow-md border border-gray-100 flex-1">
             {activeTab === "Profile" && !isLoading && user ? (<ProfileTabContent user={user} />) :
-            activeTab === "Shipping Address" ? (<ShippingAddressSeciton/>):
+                  activeTab === "Shipping Address" ? (<ShippingAddressSeciton />) :
+                    activeTab === "My Orders" ? (<OrdersTable/>) :
+                      activeTab==="Change Password"?(<ChangePassword/>):
                                       (<>{activeTab} content</>
-                                          
+
             )}
             </div>
 

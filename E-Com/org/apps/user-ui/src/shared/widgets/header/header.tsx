@@ -11,9 +11,10 @@ import { useStore } from "apps/user-ui/src/store";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
+import useRequireAuth from "apps/user-ui/src/hooks/useRequiredAuth";
 
 const Header = () => {
-  const { user, isLoading } = useUser();
+  const { user, isLoading } = useRequireAuth();
   const wishlist = useStore((state: any) => state.wishlist);
   const cart = useStore((state: any) => state.cart);
   const [searchQuery, setSearchQuery] = useState("");
@@ -155,7 +156,7 @@ const Header = () => {
                   <div className="hidden md:block">
                     <span className="text-sm font-medium text-gray-600 block">Hello,</span>
                     <span className="text-sm font-semibold text-gray-800 truncate max-w-[120px]">
-                      {user.name.split(" ")[0]}
+                      {user?.name.split(" ")[0]}
                     </span>
                   </div>
                 </Link>

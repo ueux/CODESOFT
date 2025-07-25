@@ -59,3 +59,9 @@ test-output
 # Next.js
 .next
 out
+
+admin-service/
+admin-ui/
+logger-service/
+recommendation-service/
+chatting-service/

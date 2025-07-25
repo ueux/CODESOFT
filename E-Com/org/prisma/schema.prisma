@@ -72,7 +72,7 @@ model shops {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   isDeleted     Boolean        @default(false)     // Added missing field
-  deletedAt     DateTime?  
+  deletedAt     DateTime?
 
   products products[]
 
@@ -107,11 +107,10 @@ model discount_codes {
   public_name   String
   discountType  String
   discountValue Float
-  discountCode  String
+  discountCode  String  @unique
   sellerId      String   @db.ObjectId
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  @@unique([discountCode, sellerId])
 }
 
 enum productStatus {
@@ -197,6 +196,13 @@ model followers {
   Shops shops @relation(fields: [shopId], references: [id])
 }
 
+enum DeliveryStatus {
+  Ordered
+  Packed
+  Shipped
+  Out_for_Delivery
+  Delivered
+}
 model orders {
   id               String     @id @default(auto()) @map("_id") @db.ObjectId
   userId           String     @db.ObjectId
@@ -209,6 +215,7 @@ model orders {
   discountAmount   Float      @default(0)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
+  deliveryStatus   DeliveryStatus     @default(Ordered)
 
   // Relations
   User             users       @relation(fields: [userId], references: [id])

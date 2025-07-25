@@ -398,10 +398,7 @@ export const getOrderDetails = async (req: any, res: Response, next: NextFunctio
         }) : null
         const coupon = order.couponCode ? await prisma?.discount_codes.findUnique({
             where: {
-                discountCode_sellerId: {
                     discountCode: order.couponCode,
-                    sellerId: order.Shop.sellerId
-                }
             }
         }) : null
         const productIds=order.items.map((item)=>item.productId)
@@ -477,14 +474,10 @@ export const verifyCouponCode = async (req: any, res: Response, next: NextFuncti
     try {
         const { couponCode, cart } = req.body
         if (!couponCode || !cart || cart.length === 0) return next(new ValidationError("Coupon code and cart are required"))
-        const sellerIds = cart.map((item: any) => item.sellerId?item.sellerId:"")
-
         const discount = await prisma.discount_codes.findUnique({
             where: {
-                discountCode_sellerId: {
-                    discountCode: couponCode,
-                    sellerId:{in:sellerIds}
-            } }
+                discountCode: couponCode
+            }
         })
         if (!discount) return next(new ValidationError("Coupon code isn't valid!"))
         const matchingProduct = cart.find((item: any) => item.discount_codes?.some((d: any) => d === discount.id))
@@ -506,6 +499,32 @@ export const verifyCouponCode = async (req: any, res: Response, next: NextFuncti
             message:"Discount applied to 1 eligible product"
         })
     } catch (error) {
+return next(error)
+    }
+}
 
+
+export const getUserOrders= async(req:any,res:Response,next:NextFunction)=>{
+    try{
+
+        const orders=await prisma.orders.findMany({
+            where:{
+                userId:req.user.id
+            },
+            include: {
+                items:true
+            },
+            orderBy: {
+                createdAt:"desc"
+            }
+        })
+
+        res.status(201).json({
+            success: true,
+            orders
+        })
+
+    } catch (error) {
+        return next(error)
     }
 }

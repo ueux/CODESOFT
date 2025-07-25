@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import useDeviceTracking from 'apps/user-ui/src/hooks/useDeviceTracking'
 import useLocationTracking from 'apps/user-ui/src/hooks/useLocationTracking'
+import useRequireAuth from 'apps/user-ui/src/hooks/useRequiredAuth'
 import useUser from 'apps/user-ui/src/hooks/useUser'
 import { useStore } from 'apps/user-ui/src/store'
 import axiosInstance from 'apps/user-ui/src/utils/axiosInstance'
@@ -15,7 +16,7 @@ import {toast} from 'sonner'
 
 const Cart = () => {
     const router = useRouter()
-    const { user } = useUser()
+    const { user } = useRequireAuth()
     const location = useLocationTracking()
     const deviceInfo = useDeviceTracking()
     const cart = useStore((state: any) => state.cart)
