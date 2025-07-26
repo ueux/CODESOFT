@@ -43,5 +43,4 @@
     "src/**/*.test.ts",
     ".next"
   ],
-  "files": ["src/utils2/constants.ts", "src/hooks/useSidebar.tsx"]
 }
