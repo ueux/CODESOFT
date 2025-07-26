@@ -6,11 +6,7 @@
     "emitDeclarationOnly": false,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -21,9 +17,7 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "outDir": "dist",
     "rootDir": "../../",
@@ -48,5 +42,6 @@
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
     ".next"
-  ]
+  ],
+  "files": ["src/utils2/constants.ts", "src/hooks/useSidebar.tsx"]
 }

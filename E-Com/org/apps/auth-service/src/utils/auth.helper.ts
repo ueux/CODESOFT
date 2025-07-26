@@ -7,7 +7,7 @@ import prisma from "../../../../packages/libs/prisma";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const validateRegistrationData = (data: any, userType: "user" | "seller") => {
+export const validateRegistrationData = (data: any, userType: "user" | "seller"|"admin") => {
     const { name, email, password, phone_number, country } = data;
     if (!name || !email || !password || (userType === "seller" && (!phone_number || !country))) {
         throw new ValidationError("Missing required fields!")
@@ -70,7 +70,7 @@ export const verifyOtp = async (email: string, otp: string, next: NextFunction) 
     await redis.del(`otp:${email}`, failedAttemptsKey); // Clear OTP and attempts after successful verification
 }
 
-export const handleForgotPassword = async (req: any, res: any, next: NextFunction, userType: "user" | "seller") => {
+export const handleForgotPassword = async (req: any, res: any, next: NextFunction, userType: "user" | "seller"|"admin") => {
     try {
         const { email } = req.body;
         if (!email) {

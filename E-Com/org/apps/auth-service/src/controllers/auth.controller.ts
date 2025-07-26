@@ -156,7 +156,7 @@ export const refreshToken = async (req: any, res: Response, next: NextFunction) 
             return new JsonWebTokenError("Forbidden! Invailid refresh token.")
         }
         let account;
-        if (decoded.role === "user") {
+        if (decoded.role === "user"||decoded.role==="admin") {
             account = await prisma.users.findUnique({ where: { id: decoded.id } })
         } else if (decoded.role === "seller") {
             account = await prisma.sellers.findUnique({ where: { id: decoded.id }, include: { shop: true } })
@@ -167,7 +167,7 @@ if (!account) {
         }
         const newAccessToken = jwt.sign({ id: decoded.id, role: decoded.role }, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "15m" })
 
-        if (decoded.role === "user") {
+        if (decoded.role === "user"||decoded.role==="admin") {
             setCookies(res, "accessToken", newAccessToken)
         } else if (decoded.role === "seller") {
             setCookies(res, "sellerAccessToken", newAccessToken)
@@ -455,54 +455,99 @@ return next(error)
 export const loginAdmin = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body;
+
+        // Validate input
         if (!email || !password) {
-            return next(new AuthError("Email and password are required!"));
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required!"
+            });
         }
+
+        // Check database connection
+        await prisma.$connect();
+
         const user = await prisma.users.findUnique({
             where: { email }
         });
-        const isPasswordValid = user && await bcrypt.compare(password, user.password!);
-        if (!user || !isPasswordValid) {
-            return next(new AuthError("Invalid email or password!"));
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials!"
+            });
         }
-        // const isAdmin = user.role === "admin"
-        // if (!isAdmin) {
-        //     sendLog({
-        //     type: "error", message: `Admin login failed for ${email}-not an admin`,
-        //     source:"aith-service"
-        //     })
-        //     return next(new AuthError("Invalid access!"))
-        // }
-        // sendLog({
-        //     type: "success", message: `Admin login successfull : ${email}`,
-        //     source:"aith-service"
-        // })
-        res.clearCookie("sellerAccessToken")
-        res.clearCookie("sellerRefreshToken")
-        // Here you would typically generate a JWT token
+
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(password, user.password!);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials!"
+            });
+        }
+
+        // Verify admin role
+        if (user.role !== "admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Admin access required!"
+            });
+        }
+
+        // Generate tokens
         const accessToken = jwt.sign(
-            { id: user.id, role: "user" },
-            process.env.ACCESS_TOKEN_SECRET as string,
+            { id: user.id, role: user.role },
+            process.env.ACCESS_TOKEN_SECRET!,
             { expiresIn: "15m" }
         );
+
         const refreshToken = jwt.sign(
-            { id: user.id, role: "user" },
-            process.env.REFRESH_TOKEN_SECRET as string,
+            { id: user.id, role: user.role },
+            process.env.REFRESH_TOKEN_SECRET!,
             { expiresIn: "7d" }
         );
-        //store refresh and access token in an httpOnly cookie
+
+        // Set cookies
         setCookies(res, "accessToken", accessToken);
         setCookies(res, "refreshToken", refreshToken);
-        res.status(200).json({
+
+        // Return success response
+        return res.status(200).json({
             success: true,
             message: "Admin logged in successfully!",
             user: {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                role: user.role
             }
         });
+
     } catch (error) {
-        return next(error);
+        console.error("Login error:", error);
+
+        // Handle database connection errors
+        if (error instanceof Error && error.message.includes("connect")) {
+            return res.status(503).json({
+                success: false,
+                message: "Database connection failed",
+                error: process.env.NODE_ENV === "development" ? error.message : undefined
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+}
+
+export const getAdmin = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const user = req.user;
+        res.status(201).json({success:true,user})
+    } catch (error) {
+next(error)
     }
 }

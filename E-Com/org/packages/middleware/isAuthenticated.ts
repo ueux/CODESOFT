@@ -8,12 +8,12 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
         if (!token) {
             return res.status(401).json({ message: "Unauthorized! Token missing" })
         }
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as { id: string; role: "user" | "seller" };
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as { id: string; role: "user" | "seller"|"admin" };
         if (!decoded) {
             return res.status(401).json({ message: "Unauthorized! Invalid token" })
         }
         let account;
-        if (decoded.role === "user") {
+        if (decoded.role === "user"|| decoded.role==="admin") {
             account = await prisma.users.findUnique({ where: { id: decoded.id } })
         req.user = account;
         } else if (decoded.role === "seller") {

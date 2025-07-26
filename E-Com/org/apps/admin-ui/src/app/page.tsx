@@ -24,6 +24,7 @@ const AdminLogin = () => {
         data,
         { withCredentials: true }
       );
+      console.log(response.data)
       return response.data;
     },
     onSuccess: () => {

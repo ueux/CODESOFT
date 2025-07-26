@@ -2,8 +2,8 @@
 import express from 'express';
 import * as path from 'path';
 import cookieParser from "cookie-parser";
-import { errorMiddleware } from '@packages/error-handler/error-middleware';
 import router from './routes/admin.route';
+import { errorMiddleware } from '@packages/error-handler/error-middleware';
 
 const app = express();
 app.use(express.json())

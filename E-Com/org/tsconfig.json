@@ -28,19 +28,22 @@
       "path": "./apps/order-service"
     },
     {
+      "path": "./apps/admin-service-e2e"
+    },
+    {
       "path": "./apps/admin-service"
     },
     {
       "path": "./apps/admin-ui"
     },
     {
-      "path": "./apps/chatting-service"
+      "path": "./apps/kafka-service-e2e"
     },
     {
-      "path": "./apps/logger-service"
+      "path": "./apps/order-service-e2e"
     },
     {
-      "path": "./apps/recommendation-service"
+      "path": "./apps/api-gateway-e2e"
     }
   ]
 }

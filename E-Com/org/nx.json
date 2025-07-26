@@ -48,7 +48,8 @@
         "apps/auth-service-e2e/**/*",
         "apps/api-gateway-e2e/**/*",
         "apps/kafka-service-e2e/**/*",
-        "apps/order-service-e2e/**/*"
+        "apps/order-service-e2e/**/*",
+        "apps/admin-service-e2e/**/*"
       ]
     },
     {

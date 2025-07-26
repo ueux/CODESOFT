@@ -1,35 +1,27 @@
 'use client'
 import { usePathname, useRouter } from 'next/navigation'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Box from '../box'
 import { Sidebar } from './sidebar.styles'
 import Link from 'next/link'
 import SidebarItem from './sidebar.item'
 import SidebarMenu from './sidebar.menu'
 import { BellPlus, BellRing, CalendarPlus, FileClock, ListOrdered, LogOut, Mail, PackageSearch, PencilRuler, Settings, SquarePlus, Store, TicketPercent, Users } from 'lucide-react'
-import { useQueryClient } from '@tanstack/react-query'
 import useSidebar from 'apps/admin-ui/src/hooks/useSidebar'
 import useAdmin from 'apps/admin-ui/src/hooks/useAdmin'
 import Logo from 'apps/admin-ui/src/assets/svgs/logo'
 import { HomeIcon } from 'apps/admin-ui/src/assets/svgs/home'
 import Payments from 'apps/admin-ui/src/assets/svgs/payment'
-import axiosInstance from 'apps/admin-ui/src/utils/axiosInstance'
 
 const SidebarBarWrapper = () => {
-  const { activeSidebar, setActiveSidebar } = useSidebar()
+  const {activeSidebar, setActiveSidebar } = useSidebar()
   const pathName = usePathname()
-  const {admin,isLoading,isError,refetch}=useAdmin()
-  const queryClient = useQueryClient()
-  const router=useRouter()
+  const {admin}=useAdmin()
   useEffect(() => {
     setActiveSidebar(pathName)
   },[pathName,setActiveSidebar])
   const getIconColor = (route: string) => activeSidebar === route ? "#0085ff" : "#969696"
-  const logOutHandler = async () => {
-    await axiosInstance.get("/api/logout-seller");
-    queryClient.invalidateQueries({ queryKey: ["seller"] });
-    router.push("/login");
-  };
+
   return (
     <Box css={{ height: "100vh", zIndex: 202, position: "sticky", padding: "8px", top: "0", overflow: "scroll", scrollbarWidth: "none" }} className='sidebar-wrapper'>
       <Sidebar.Header>
