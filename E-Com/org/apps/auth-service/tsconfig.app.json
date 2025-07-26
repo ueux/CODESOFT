@@ -12,7 +12,7 @@
     "src/**/*.ts",
     "../../packages/**/*.ts",
     "src/*.json"
-  ],
+, "../admin-ui/src/hooks/useSidebar.tsx"  ],
   "exclude": [
     "out-tsc",
     "dist",

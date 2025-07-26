@@ -451,3 +451,58 @@ export const updateUserPassword = async(req:any,res:Response,next:NextFunction) 
 return next(error)
     }
 }
+
+export const loginAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return next(new AuthError("Email and password are required!"));
+        }
+        const user = await prisma.users.findUnique({
+            where: { email }
+        });
+        const isPasswordValid = user && await bcrypt.compare(password, user.password!);
+        if (!user || !isPasswordValid) {
+            return next(new AuthError("Invalid email or password!"));
+        }
+        // const isAdmin = user.role === "admin"
+        // if (!isAdmin) {
+        //     sendLog({
+        //     type: "error", message: `Admin login failed for ${email}-not an admin`,
+        //     source:"aith-service"
+        //     })
+        //     return next(new AuthError("Invalid access!"))
+        // }
+        // sendLog({
+        //     type: "success", message: `Admin login successfull : ${email}`,
+        //     source:"aith-service"
+        // })
+        res.clearCookie("sellerAccessToken")
+        res.clearCookie("sellerRefreshToken")
+        // Here you would typically generate a JWT token
+        const accessToken = jwt.sign(
+            { id: user.id, role: "user" },
+            process.env.ACCESS_TOKEN_SECRET as string,
+            { expiresIn: "15m" }
+        );
+        const refreshToken = jwt.sign(
+            { id: user.id, role: "user" },
+            process.env.REFRESH_TOKEN_SECRET as string,
+            { expiresIn: "7d" }
+        );
+        //store refresh and access token in an httpOnly cookie
+        setCookies(res, "accessToken", accessToken);
+        setCookies(res, "refreshToken", refreshToken);
+        res.status(200).json({
+            success: true,
+            message: "Admin logged in successfully!",
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+            }
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
