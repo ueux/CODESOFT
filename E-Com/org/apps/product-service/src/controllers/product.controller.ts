@@ -216,7 +216,23 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
 export const getShopProducts=async (req:any,res:Response,next:NextFunction)=> {
 try {
     const products = await prisma.products.findMany({
-        where: { shopId: req.seller.shop.id },
+        where: { shopId: req.seller.shop.id ,starting_date:null},
+        include: { images: true }
+    })
+    res.status(201).json({
+        success: true,
+        products
+    })
+} catch (error) {
+return next(error)
+}
+
+}
+
+export const getShopEvents=async (req:any,res:Response,next:NextFunction)=> {
+try {
+    const products = await prisma.products.findMany({
+        where: { shopId: req.seller.shop.id ,starting_date:{not:null}},
         include: { images: true }
     })
     res.status(201).json({

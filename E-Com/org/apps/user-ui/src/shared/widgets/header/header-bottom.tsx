@@ -42,6 +42,7 @@ const HeaderBottom = () => {
             <span>All Departments</span>
             <ChevronDown size={18} className={`transition-transform ${show ? "rotate-180" : ""}`} />
           </button>
+          {show&&()}
         </div>
 
         {/* Navigation Links */}

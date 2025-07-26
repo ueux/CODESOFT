@@ -60,7 +60,7 @@ const SidebarBarWrapper = () => {
             </SidebarMenu>
             <SidebarMenu title="Extras">
               <SidebarItem title='Discount Codes' icon={<TicketPercent color={getIconColor("/dashboard/discount-codes")} size={20} />} isActive={activeSidebar === "/dashboard/discount-codes"} href='/dashboard/discount-codes' />
-              <SidebarItem title='Logout'  icon={<LogOut fill={getIconColor("/logout")} size={20} />} isActive={activeSidebar === "/logout"} href='/' />
+              <SidebarItem title='Logout'  icon={<LogOut fill={getIconColor("/logout")} size={20} />} isActive={activeSidebar === "/logout"} href='/login' />
             </SidebarMenu>
           </div>
         </Sidebar.Body>

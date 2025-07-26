@@ -1,5 +1,5 @@
 import express,{ Router } from "express";
-import { creatDiscountCodes, createProduct, deleteDiscountCode, deleteProduct, deleteProductImage, getAllEvents, getAllProducts, getCategories, getDiscountCodes, getFilteredEvents, getFilteredProducts, getFilteredShops, getProduct, getShopProducts, getTopShops, restoreProduct, searchProducts, uploadProductImage } from "../controllers/product.controller";
+import { creatDiscountCodes, createProduct, deleteDiscountCode, deleteProduct, deleteProductImage, getAllEvents, getAllProducts, getCategories, getDiscountCodes, getFilteredEvents, getFilteredProducts, getFilteredShops, getProduct, getShopEvents, getShopProducts, getTopShops, restoreProduct, searchProducts, uploadProductImage } from "../controllers/product.controller";
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 
 const router: Router = express.Router();
@@ -12,6 +12,7 @@ router.post("/upload-product-image",isAuthenticated,uploadProductImage)
 router.delete("/delete-product-image/:fileId",isAuthenticated,deleteProductImage)
 router.post("/create-product",isAuthenticated,createProduct)
 router.get("/get-shop-products",isAuthenticated,getShopProducts)
+router.get("/get-shop-events",isAuthenticated,getShopEvents)
 router.delete("/delete-product/:id",isAuthenticated,deleteProduct)
 router.put("/restore-product/:id",isAuthenticated,restoreProduct)
 router.get("/get-all-products",getAllProducts)

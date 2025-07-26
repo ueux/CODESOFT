@@ -116,7 +116,9 @@ const initializeSiteConfig = async () => {
       "Oximeters",
       "First Aid"
     ]
-  }
+                },
+                logo: "https://ik.imagekit.io/Ueux/products/azuredragonscape.png",
+  banner:"https://ik.imagekit.io/Ueux/products/azuredragonscape.png"
 }
 })
         }

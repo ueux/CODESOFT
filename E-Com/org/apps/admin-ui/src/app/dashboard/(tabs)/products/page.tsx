@@ -107,7 +107,7 @@ const ProductList = () => {
         },
       },
       {
-        accessorKey: "price",
+        accessorKey: "sale_price",
         header: "Price",
         cell: ({ row }) => (
           <span className="whitespace-nowrap text-green-500">

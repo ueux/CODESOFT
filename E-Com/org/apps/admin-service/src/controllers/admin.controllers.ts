@@ -63,6 +63,8 @@ export const getAllEvents=async (req:Request,res:Response,next:NextFunction)=> {
                 stock: true,
                 createdAt: true,
                 ratings: true,
+                starting_date: true,
+                ending_date:true,
                 category: true,
                 images: {
                     select: { url: true },
