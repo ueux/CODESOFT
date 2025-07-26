@@ -25,6 +25,7 @@
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "canvas-confetti": "^1.9.3",
+    "class-variance-authority": "^0.7.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -59,6 +60,7 @@
     "styled-components": "^6.1.19",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
+    "tailwind-merge": "^3.3.1",
     "ua-parser-js": "^2.0.4",
     "zustand": "^5.0.6"
   },

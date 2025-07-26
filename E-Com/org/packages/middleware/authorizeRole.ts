@@ -9,3 +9,7 @@ export const isUser = (req: any, res: Response, next: NextFunction) => {
     if (req.role !== "user") return next(new AuthError("Access denied:user only"))
     next()
 }
+export const isAdmin = (req: any, res: Response, next: NextFunction) => {
+    if (req.role !== "admin") return next(new AuthError("Access denied:user only"))
+    next()
+}

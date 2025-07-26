@@ -1,91 +1,88 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useDeferredValue, useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   useReactTable,
+  type ColumnDef,
 } from "@tanstack/react-table";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  BarChart,
-  ChevronRight,
-  Eye,
-  Pencil,
-  Search,
-  Star,
-  Trash2,
-  Undo2,
-} from "lucide-react";
+import { Download, Eye, Search, Star } from "lucide-react";
 import axiosInstance from "apps/admin-ui/src/utils/axiosInstance";
+import { Button } from "apps/admin-ui/src/shared/components/button";
+import { Skeleton } from "apps/admin-ui/src/shared/components/skeleton";
+import Pagination from "apps/admin-ui/src/shared/components/pagination";
 
-const fetchProducts = async () => {
-  const res = await axiosInstance.get("/product/api/get-shop-products");
-  return res?.data?.products;
-};
+interface Product {
+  id: string;
+  title: string;
+  slug: string;
+  sale_price: number;
+  stock: number;
+  category: string;
+  ratings?: number;
+  shop?: {
+    name: string;
+  };
+  images: Array<{ url: string }>;
+  createdAt: string;
+}
 
 const ProductList = () => {
   const [globalFilter, setGlobalFilter] = useState("");
-  const [analyticSData, setAnalyticSData] = useState(null);
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>();
-  const queryClient = useQueryClient();
+  const deferredFilter = useDeferredValue(globalFilter);
+  const [page, setPage] = useState(1);
+  const limit = 10;
 
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ["shop-products"],
-    queryFn: fetchProducts,
-    staleTime: 1000 * 60 * 5,
-  });
-  const deleteMutation = useMutation({
-    mutationFn: (productId: string) =>
-      axiosInstance.delete(`/product/api/delete-product/${productId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shop-products"] });
-      setShowDeleteModal(false);
-      // Add success toast notification if needed
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["all-products", page],
+    queryFn: async () => {
+      const res = await axiosInstance.get(
+        `/admin/api/get-all-products?page=${page}&limit=${limit}`
+      );
+      return res?.data;
     },
-    onError: (error) => {
-      console.error("Delete failed:", error);
-      // Add error toast notification if needed
-    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Restore mutation
-  const restoreMutation = useMutation({
-    mutationFn: (productId: string) =>
-      axiosInstance.put(`/product/api/restore-product/${productId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shop-products"] });
-      setShowDeleteModal(false);
-      // Add success toast notification if needed
-    },
-    onError: (error) => {
-      console.error("Restore failed:", error);
-      // Add error toast notification if needed
-    },
-  });
-  const columns = useMemo(
+  const allProducts = data?.data || [];
+  const totalPages = Math.ceil((data?.meta?.totalProducts ?? 0) / limit);
+
+  const filteredProducts = useMemo(() => {
+    return allProducts.filter((product: Product) =>
+      Object.values(product)
+        .join(" ")
+        .toLowerCase()
+        .includes(deferredFilter.toLowerCase())
+    );
+  }, [allProducts, deferredFilter]);
+
+  const columns = useMemo<ColumnDef<Product>[]>(
     () => [
       {
         accessorKey: "image",
         header: "Image",
-        cell: ({ row }: any) => {
-          const imageUrl = row.original?.images[0]?.url;
-
-          return imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt="Product Image"
-              width={48}
-              height={48}
-              className="w-12 h-12 rounded-md object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-md bg-gray-700 flex items-center justify-center text-xs text-gray-300">
-              N/A
+        cell: ({ row }) => {
+          const imageUrl = row.original.images[0]?.url;
+          return (
+            <div className="w-12 h-12 relative">
+              {imageUrl ? (
+                <Image
+                  src={imageUrl}
+                  alt="Product Image"
+                  fill
+                  className="rounded-md object-cover"
+                  sizes="48px"
+                />
+              ) : (
+                <div className="w-full h-full rounded-md bg-gray-700 flex items-center justify-center text-xs text-gray-300">
+                  N/A
+                </div>
+              )}
             </div>
           );
         },
@@ -93,16 +90,16 @@ const ProductList = () => {
       {
         accessorKey: "name",
         header: "Product Name",
-        cell: ({ row }: any) => {
+        cell: ({ row }) => {
+          const title = row.original.title;
           const truncatedTitle =
-            row.original.title.length > 25
-              ? `${row.original.title.substring(0, 25)}...`
-              : row.original.title;
+            title.length > 25 ? `${title.substring(0, 25)}...` : title;
           return (
             <Link
               href={`${process.env.NEXT_PUBLIC_USER_UI_LINK}/product/${row.original.slug}`}
-              className="text-blue-400 hover:underline"
-              title={row.original.title}
+              className="text-blue-400 hover:underline whitespace-nowrap"
+              title={title}
+              target="_blank"
             >
               {truncatedTitle}
             </Link>
@@ -112,12 +109,16 @@ const ProductList = () => {
       {
         accessorKey: "price",
         header: "Price",
-        cell: ({ row }: any) => <span>₹{row.original.sale_price}</span>,
+        cell: ({ row }) => (
+          <span className="whitespace-nowrap text-green-500">
+            ₹{row.original.sale_price.toLocaleString()}
+          </span>
+        ),
       },
       {
         accessorKey: "stock",
         header: "Stock",
-        cell: ({ row }: any) => (
+        cell: ({ row }) => (
           <span
             className={row.original.stock < 10 ? "text-red-500" : "text-white"}
           >
@@ -128,56 +129,50 @@ const ProductList = () => {
       {
         accessorKey: "category",
         header: "Category",
+        cell: ({ row }) => (
+          <span className="capitalize text-blue-100">{row.original.category}</span>
+        ),
       },
       {
         accessorKey: "rating",
         header: "Rating",
-        cell: ({ row }: any) => (
+        cell: ({ row }) => (
           <div className="flex items-center gap-1 text-yellow-400">
-            <Star fill="#fde047" size={18} />{" "}
-            <span className="text-white">{row.original.ratings || 5}</span>
+            <Star fill="#fde047" size={18} />
+            <span className="text-white">
+              {row.original.ratings?.toFixed(1) || "5.0"}
+            </span>
           </div>
         ),
       },
       {
-        header: "Actions",
-        cell: ({ row }: any) => (
+        accessorKey: "shop",
+        header: "Shop",
+        cell: ({ row }) => (
+          <span className="text-white">
+            {row.original.shop?.name || "Unknown Shop"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "createdAt",
+        header: "Date",
+        cell: ({ row }) => {
+          const date = new Date(row.original.createdAt).toLocaleDateString();
+          return <span className="text-white text-sm">{date}</span>;
+        },
+      },
+      {
+        id: "actions",
+        cell: ({ row }) => (
           <div className="flex gap-3">
             <Link
-              href={`/product/${row.original.id}`}
+              href={`${process.env.NEXT_PUBLIC_USER_UI_LINK}/product/${row.original.slug}`}
               className="text-blue-400 hover:text-blue-300 transition"
+              target="_blank"
             >
               <Eye size={18} />
             </Link>
-            <Link
-              href={`/product/edit/${row.original.id}`}
-              className="text-yellow-400 hover:text-yellow-300 transition"
-            >
-              <Pencil size={18} />
-            </Link>
-            <button
-              className="text-green-400 hover:text-green-300 transition"
-              onClick={() => openAnalytics(row.original)}
-            >
-              <BarChart size={18} />
-            </button>
-            <button
-              className={`${
-                row.original.isDeleted
-                  ? "text-green-400 hover:text-green-300"
-                  : "text-red-400 hover:text-red-300"
-              } transition`}
-              onClick={() => {
-                setSelectedProduct(row.original);
-                setShowDeleteModal(true);
-              }}
-            >
-              {row.original.isDeleted ? (
-                <Undo2 size={18} />
-              ) : (
-                <Trash2 size={18} />
-              )}
-            </button>
           </div>
         ),
       },
@@ -186,106 +181,162 @@ const ProductList = () => {
   );
 
   const table = useReactTable({
-    data: products,
+    data: filteredProducts,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    globalFilterFn: "includesString",
-    state: { globalFilter },
+    getPaginationRowModel: getPaginationRowModel(),
+    state: {
+      globalFilter,
+    },
     onGlobalFilterChange: setGlobalFilter,
   });
 
-  const openAnalytics = (product: any) => {
-    setSelectedProduct(product);
-    setShowAnalytics(true);
+  const exportCSV = () => {
+    const headers = [
+      "Title",
+      "Price",
+      "Stock",
+      "Category",
+      "Rating",
+      "Shop",
+      "Date",
+    ].join(",");
+
+    const rows = filteredProducts.map((product: Product) =>
+      [
+        `"${product.title}"`,
+        product.sale_price,
+        product.stock,
+        product.category,
+        product.ratings || 5,
+        product.shop?.name || "Unknown",
+        new Date(product.createdAt).toLocaleDateString(),
+      ].join(",")
+    );
+
+    const csvContent = [headers, ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `products_${new Date().toISOString()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
-    <div className="w-full min-h-screen p-8">
+    <div className="w-full min-h-screen p-4 md:p-8">
       {/* Breadcrumbs */}
-      <div className="flex items-center mb-4">
-        <Link href="/dashboard" className="text-blue-400 cursor-pointer">
+      <div className="flex items-center mb-4 text-sm">
+        <Link
+          href="/dashboard"
+          className="text-blue-400 hover:underline cursor-pointer"
+        >
           Dashboard
         </Link>
-        <ChevronRight size={20} className="text-gray-200" />
+        <span className="mx-2 text-gray-400">/</span>
         <span className="text-white">All Products</span>
       </div>
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h2 className="text-2xl text-white font-semibold">All Products</h2>
-        <Link
-          href="/dashboard/create-product"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+        <Button
+          onClick={exportCSV}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
-          Create Product
-        </Link>
+          <Download size={16} className="mr-2" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Search Bar */}
-      <div className="mb-4 flex items-center bg-gray-900 p-2 rounded-md">
+      <div className="mb-6 flex items-center bg-gray-900 p-2 rounded-md border border-gray-700">
         <Search size={18} className="text-gray-400 mr-2" />
         <input
           type="text"
           placeholder="Search products..."
-          className="w-full bg-transparent text-white outline-none"
+          className="w-full bg-transparent text-white outline-none placeholder-gray-400"
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-gray-900 rounded-lg p-4">
+      <div className="overflow-x-auto bg-gray-900 rounded-lg border border-gray-700">
         {isLoading ? (
-          <p className="text-center text-white">Loading products...</p>
+          <div className="p-4 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="w-full h-12 bg-gray-800 rounded" />
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="p-4 text-center text-red-400">
+            Failed to load products
+          </div>
         ) : (
-          <table className="w-full text-white">
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b border-gray-800">
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="p-3 text-left">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="border-b border-gray-800">
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="p-3">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <table className="w-full">
+              <thead>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr
+                    key={headerGroup.id}
+                    className="border-b border-gray-800"
+                  >
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        className="p-3 text-left text-gray-300 font-medium text-sm"
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="p-3">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {filteredProducts.length === 0 && (
+              <div className="p-4 text-center text-gray-400">
+                No products found
+              </div>
+            )}
+          </>
         )}
       </div>
-      {showDeleteModal && (
-        <DeleteConfirmationModal
-          product={selectedProduct}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={() => deleteMutation.mutate(selectedProduct?.id)}
-          onRestore={() => restoreMutation.mutate(selectedProduct?.id)}
-        />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </div>
       )}
-      {
-          !isLoading && products?.length === 0 && (<p className='text-center py-3 text-white'>
-              No products found!
-          </p>)
-      }
     </div>
   );
 };

@@ -36,6 +36,17 @@ const PaymentsPage = () => {
         },
       },
       {
+        accessorKey: "shop.name",
+        header: "Shop",
+        cell: ({ row }: any) => (
+            <span
+              className="text-white"
+            >
+                {row.original.shop?.name??"Unknown Shop"}
+            </span>
+          )
+      },
+      {
         accessorKey: "user.name",
         header: "Buyer",
         cell: ({ row }: any) => (
@@ -47,18 +58,17 @@ const PaymentsPage = () => {
           )
       },
       {
+                header: "Admin Fee (10%)",
+                cell: ({ row }: any) => {
+                    const adminFee = row.original.total * 0.1;
+                    return (<span className='text-green-400 font-medium'>₹{adminFee.toFixed(2)}</span>)
+                }
+      },
+      {
                 header: "Seller Earning",
                 cell: ({ row }: any) => {
                     const sellerShare = row.original.total * 0.9;
                     return (<span className='text-green-400 font-medium'>₹{sellerShare.toFixed(2)}</span>)
-                }
-      },
-        {
-
-                header: "Admin Fee",
-                cell: ({ row }: any) => {
-                    const adminFee = row.original.total * 0.1;
-                    return (<span className='text-yellow-400 '>₹{adminFee.toFixed(2)}</span>)
                 }
       },
       {

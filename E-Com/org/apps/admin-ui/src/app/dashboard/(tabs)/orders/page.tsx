@@ -8,7 +8,7 @@ import Link from 'next/link';
 import React, { useMemo, useState } from 'react'
 
 const fetchOrders = async () => {
-  const res = await axiosInstance.get("/order/api/get-seller-orders");
+  const res = await axiosInstance.get("/order/api/get-admin-orders");
   return res?.data?.orders;
 };
 
@@ -34,6 +34,17 @@ const OrdersPage = () => {
                 </span>
             )
         },
+      },
+      {
+        accessorKey: "shop.name",
+        header: "Shop",
+        cell: ({ row }: any) => (
+            <span
+              className="text-white"
+            >
+                {row.original.shop?.name??"Unknown Shop"}
+            </span>
+          )
       },
       {
         accessorKey: "user.name",

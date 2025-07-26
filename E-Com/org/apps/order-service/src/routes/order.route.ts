@@ -1,7 +1,7 @@
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 import express, { Router } from "express";
-import { createPaymentIntent, createPaymentSession, getOrderDetails, getSellerOrders, getUserOrders, updateOrderStatus, verifyCouponCode, verifyingPaymentSession } from "../controllers/order.controller";
-import { isSeller } from "@packages/middleware/authorizeRole";
+import { createPaymentIntent, createPaymentSession, getAdminOrders, getOrderDetails, getSellerOrders, getUserOrders, updateOrderStatus, verifyCouponCode, verifyingPaymentSession } from "../controllers/order.controller";
+import { isAdmin, isSeller } from "@packages/middleware/authorizeRole";
 
 const router: Router = express.Router()
 
@@ -13,5 +13,6 @@ router.get("/get-order-details/:orderId",isAuthenticated,getOrderDetails)
 router.put("/update-status/:orderId", isAuthenticated, isSeller, updateOrderStatus)
 router.put("/verify-coupon",isAuthenticated,verifyCouponCode)
 router.get("/get-user-orders", isAuthenticated, getUserOrders)
+router.get("/get-admin-orders", isAuthenticated,isAdmin, getAdminOrders)
 
 export default router

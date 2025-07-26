@@ -201,7 +201,7 @@ const DashboardPage = () => {
               Visual breakdown of global user & seller activity
             </span>
           </h2>
-          <GeographicalMap />
+          {/* <GeographicalMap /> */}
         </div>
 
         {/* Orders Table */}
