@@ -1,7 +1,9 @@
 'use client'
-import React, { useState } from 'react'
+import React, { Children, useState } from 'react'
 import { Query, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {Toaster} from "sonner"
+import useUser from '../hooks/useUser'
+import { WebSocketProvider } from '../context/web-socket-context'
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(() => new QueryClient({
@@ -15,7 +17,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
       <div>
           <QueryClientProvider client={queryClient}>
-        {children}
+        <ProviderWithWebSocket>{children}</ProviderWithWebSocket>
         <Toaster/>
           </QueryClientProvider>
     </div>
@@ -23,3 +25,15 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
 }
 
 export default Providers
+
+
+const ProviderWithWebSocket = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useUser()
+  return (<>{user &&
+  <WebSocketProvider user={user}>
+    {children}
+  </WebSocketProvider>
+  }
+    {!user && children}
+  </>)
+}
