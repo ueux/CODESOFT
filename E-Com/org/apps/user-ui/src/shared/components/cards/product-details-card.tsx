@@ -9,6 +9,8 @@ import { useStore } from 'apps/user-ui/src/store'
 import useUser from 'apps/user-ui/src/hooks/useUser'
 import useLocationTracking from 'apps/user-ui/src/hooks/useLocationTracking'
 import useDeviceTracking from 'apps/user-ui/src/hooks/useDeviceTracking'
+import axiosInstance from 'apps/user-ui/src/utils/axiosInstance'
+import { isProtected } from 'apps/user-ui/src/utils/protected'
 
 const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: boolean) => void }) => {
   const [activeImage, setActiveImage] = useState(0)
@@ -26,7 +28,8 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
   const deviceInfo=useDeviceTracking()
   const addToCart = useStore((state: any) => state.addToCart)
   const cart = useStore((state: any) => state.cart)
-  const isInCart=cart.some((item:any)=>item.id===data.id)
+  const isInCart = cart.some((item: any) => item.id === data.id)
+  const [isLoading,setIsLoading]=useState(false)
 
   // Calculate estimated delivery date (3-7 business days)
   const estimatedDelivery = new Date()
@@ -50,6 +53,24 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
 
     setIsAddingToCart(false)
     },1000)
+  }
+
+  const handleChat = async () => {
+    if(isLoading)return;
+    setIsLoading(true)
+    try {
+      const res = await axiosInstance.post("/chatting/api/create-user-conversationGroup",
+        {
+          sellerId: data?.Shop?.sellerId
+        },
+          isProtected
+      )
+      router.push(`/inbox?conversationId=${res.data.conversation.id}`)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -148,7 +169,7 @@ const ProductDetailsCard = ({ data, setOpen }: { data: any, setOpen: (open: bool
 
             <button
               className='flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm whitespace-nowrap'
-              onClick={() => router.push(`/inbox?shopId=${data?.Shop?.id}`)}
+              onClick={() => handleChat}
             >
               <span>💬</span>
               <span>Chat</span>

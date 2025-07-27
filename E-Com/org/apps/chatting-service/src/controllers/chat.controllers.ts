@@ -101,7 +101,7 @@ export const getUserConversation = async (
           isOnline = !!redisResult;
         }
         const unreadCount = await getUnseenCount("user", group.id);
-        return {
+        return ({
           conversationId: group.id,
           seller: {
             id: seller?.id || null,
@@ -113,10 +113,10 @@ export const getUserConversation = async (
             lastMessage?.content || "Say something to start a conversation",
           lastMassageAt: lastMessage?.createdAt || group.updatedAt,
           unreadCount,
-        };
+        });
       })
     );
-    return res.status(200).json({ conversations, responseData });
+    return res.status(200).json({ conversations: responseData });
   } catch (error) {
     return next(error);
   }
@@ -185,7 +185,7 @@ export const getSellerConversation = async (
         };
       })
     );
-    return res.status(200).json({ conversations, responseData });
+    return res.status(200).json({ conversations: responseData });
   } catch (error) {
     return next(error);
   }
