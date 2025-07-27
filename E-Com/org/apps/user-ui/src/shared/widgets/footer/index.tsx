@@ -1,8 +1,13 @@
+'use client'
+
 import React from 'react';
 import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 import { FacebookIcon, InstagramIcon, LinkedInIcon, TwitterIcon, YouTubeIcon } from 'apps/user-ui/src/assets/svgs/socialMediaIcons';
+import { usePathname } from 'next/navigation';
 
 const Footer = () => {
+  const pathName = usePathname()
+  if(pathName==='/inbox') return null
   return (
     <footer className="bg-white text-gray-900 py-12 px-4 sm:px-6 lg:px-8 ">
 

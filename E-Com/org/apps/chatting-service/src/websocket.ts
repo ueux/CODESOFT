@@ -91,7 +91,7 @@ export async function createWebSocketServer(server: HttpServer) {
                 }
 
                 await producer.send({
-                    topic: "chat.mew_message",
+                    topic: "chat.new_message",
                     messages: [{
                         key: conversationId,
                         value:JSON.stringify(messagePayload)
