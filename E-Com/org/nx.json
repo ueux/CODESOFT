@@ -49,7 +49,10 @@
         "apps/api-gateway-e2e/**/*",
         "apps/kafka-service-e2e/**/*",
         "apps/order-service-e2e/**/*",
-        "apps/admin-service-e2e/**/*"
+        "apps/admin-service-e2e/**/*",
+        "apps/chatting-service-e2e/**/*",
+        "apps/recommendation-service-e2e/**/*",
+        "apps/logger-service-e2e/**/*"
       ]
     },
     {

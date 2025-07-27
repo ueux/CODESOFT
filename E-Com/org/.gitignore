@@ -59,7 +59,3 @@ test-output
 # Next.js
 .next
 out
-
-logger-service/
-recommendation-service/
-chatting-service/
