@@ -43,7 +43,7 @@ export const createPaymentIntent = async (req: any, res: Response, next: NextFun
 
         res.send({ clientSecret: paymentIntent.client_secret });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 }
 
@@ -135,7 +135,7 @@ export const createPaymentSession = async (req: any, res: Response, next: NextFu
         await redis.setex(`payment-session:${sessionId}`, 600, JSON.stringify(sessionData));
         res.status(201).json({ sessionId });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 }
 
@@ -156,7 +156,7 @@ export const verifyingPaymentSession = async (req: Request, res: Response, next:
             session
         })
     } catch (error) {
-        next(error)
+        return next(error)
     }
 }
 
