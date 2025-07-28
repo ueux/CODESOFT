@@ -67,7 +67,7 @@ export const SellerProfile = ({ shop, followersCount }: SellerProfileProps) => {
       const res = await axiosInstance.get(
         `/seller/api/get-seller-events/${shop.id}?page=1&limit=10`
       );
-      return res.data.products || [];
+      return res.data.events || [];
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: !!shop?.id,

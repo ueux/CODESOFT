@@ -21,6 +21,8 @@ import Zoom from 'react-medium-image-zoom'
 import 'react-medium-image-zoom/dist/styles.css'
 import ProductCard from "../../components/cards/product-card";
 import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
+import { useRouter } from "next/navigation";
+import { isProtected } from "apps/user-ui/src/utils/protected";
 
 const ProductDetails = ({ productDetails }: { productDetails: any }) => {
   // State management
@@ -49,7 +51,8 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
   const cart = useStore((state: any) => state.cart);
   const isInCart = cart.some((item: any) => item.id === productDetails?.id);
   const addToCart = useStore((state: any) => state.addToCart);
-
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
   // Image navigation
   const prevImage = () => {
     if (currentIndex > 0) {
@@ -102,7 +105,25 @@ console.error("Failed to fetch filtered products",error)
   useEffect(() => {
     fetchFilteredProducts()
 
-  },[priceRange])
+  }, [priceRange])
+
+  const handleChat = async () => {
+      if(isLoading)return;
+      setIsLoading(true)
+      try {
+        const res = await axiosInstance.post("/chatting/api/create-user-conversationGroup",
+          {
+            sellerId: productDetails?.Shop?.sellerId
+          },
+            isProtected
+        )
+        router.push(`/inbox?conversationId=${res.data.conversation.id}`)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
   return (
     <div className="w-full bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
@@ -373,6 +394,7 @@ console.error("Failed to fetch filtered products",error)
 
               <Link
                 href="#"
+                onClick={()=>handleChat()}
                 className="inline-flex items-center gap-1 text-blue-500 text-sm mt-3 hover:underline"
               >
                 <MessageSquareText size={16} /> Chat with Seller
