@@ -1,37 +1,58 @@
-import { kafka } from "@packages/utils/kafka";
+// logger-consumer.ts
+import { getConsumer } from "@packages/utils/kafka";
 import { clients } from "./main";
+import WebSocket from "ws"
 
-const consumer = kafka.consumer({ groupId: "log-events-group" });
-const logQueue: string[] = [];
-
-// websocket processing function for logs
-const processLogs = () => {
-  if (logQueue.length === 0) return;
-
-  console.log(`Processing ${logQueue.length} logs in batch`);
-  const logs = [...logQueue];
-  logQueue.length = 0;
-
-  clients.forEach((client) => {
-    logs.forEach((log) => {
-      client.send(log);
-    });
+const processLogs = (logs: string[]) => {
+  clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      logs.forEach(log => {
+        try {
+          client.send(log);
+        } catch (err) {
+          console.error('WebSocket send error:', err);
+        }
+      });
+    }
   });
 };
 
-// consume log messages from kafka
 export const consumeKafkaMessages = async () => {
-  await consumer.connect();
+  const consumer = await getConsumer("log-events-group");
+
   await consumer.subscribe({ topic: "logs", fromBeginning: false });
 
-  await consumer.run({
-    eachMessage: async ({ message }) => {
-      if (!message.value) return;
-      const log = message.value.toString();
-      logQueue.push(log);
-    },
+  let logBatch: string[] = [];
+  let batchTimeout: NodeJS.Timeout;
+
+  consumer.on('consumer.crash', async (event) => {
+    console.error('Consumer crashed:', event.payload.error);
+    setTimeout(consumeKafkaMessages, 5000); // Reconnect after 5 seconds
   });
 
-};
+  try {
+    await consumer.run({
+      eachMessage: async ({ message }) => {
+        if (!message.value) return;
 
-consumeKafkaMessages().catch(console.error)
+        logBatch.push(message.value.toString());
+
+        clearTimeout(batchTimeout);
+        if (logBatch.length >= 100) {
+          processLogs([...logBatch]);
+          logBatch = [];
+        } else {
+          batchTimeout = setTimeout(() => {
+            if (logBatch.length > 0) {
+              processLogs([...logBatch]);
+              logBatch = [];
+            }
+          }, 100);
+        }
+      },
+    });
+  } catch (error) {
+    console.error('Failed to run consumer:', error);
+    setTimeout(consumeKafkaMessages, 5000); // Reconnect after 5 seconds
+  }
+};

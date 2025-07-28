@@ -1,4 +1,4 @@
-import { Kafka} from "kafkajs"
+import { Consumer, Kafka, Producer} from "kafkajs"
 
 export const kafka = new Kafka({
     clientId: "kafka-service",
@@ -10,3 +10,39 @@ export const kafka = new Kafka({
         password:process.env.KAFKA_API_SECRET!,
     }
 })
+
+
+// Store instances
+let producerInstance: Producer | null = null;
+let consumerInstance: Consumer | null = null;
+
+export const getProducer = async (): Promise<Producer> => {
+  if (!producerInstance) {
+    producerInstance = kafka.producer();
+    await producerInstance.connect();
+  }
+  return producerInstance;
+};
+
+export const getConsumer = async (groupId: string): Promise<Consumer> => {
+  if (!consumerInstance) {
+    consumerInstance = kafka.consumer({ groupId });
+    await consumerInstance.connect();
+  }
+  return consumerInstance;
+};
+
+export const disconnectAll = async () => {
+  try {
+    if (producerInstance) {
+      await producerInstance.disconnect();
+      producerInstance = null;
+    }
+    if (consumerInstance) {
+      await consumerInstance.disconnect();
+      consumerInstance = null;
+    }
+  } catch (error) {
+    console.error('Error disconnecting Kafka clients:', error);
+  }
+};
