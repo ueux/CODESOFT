@@ -161,6 +161,7 @@ export const verifyingPaymentSession = async (req: Request, res: Response, next:
 }
 
 //call by stripe
+//run --> stripe listen --forward-to localhost:6004/api/create-order
 export const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const stripeSinature = req.headers['stripe-signature']
@@ -215,7 +216,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         orderTotal -= discount
                     }
                 }
-                await prisma.orders.create({
+                const order=await prisma.orders.create({
                     data: {
                         userId,
                         shopId,
@@ -293,10 +294,18 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         name,
                         cart,
                         totalAmount: coupon?.discountAmount ? totalAmount - coupon?.discountAmount : totalAmount,
-                        trackingUrl:`https://e-com.com/order/${sessionId}`
+                        trackingUrl:`http://localhost:3000/order/${order.id}`
                     }
                 )
-
+                await prisma.notifications.create({
+                        data: {
+                            title: "Your Eshop Order Confirmation",
+                            message: `order-confirmation `,
+                            creatorId: userId,
+                            receiverId: userId,
+                            redirect_link:`/order/${order.id}`
+                        }
+                })
                 const createdShopIds = Object.keys(shopGrouped)
                 const sellerShops = await prisma.shops.findMany({
                     where: { id: { in: createdShopIds } },
@@ -316,7 +325,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                             message: `A customer just ordered ${productTitle} from your shop`,
                             creatorId: userId,
                             receiverId: shop.sellerId,
-                            redirect_link:`https://e-com.com/order/${sessionId}`
+                            redirect_link:`/order/${order.id}`
                         }
                     })
 
@@ -327,7 +336,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                             message: `A new Order was placed by ${name} `,
                             creatorId: userId,
                             receiverId: "admin",
-                            redirect_link:`https://e-com.com/order/${sessionId}`
+                            redirect_link:`/order/${order.id}`
                         }
                 })
                 await redis.del(sessionKey)

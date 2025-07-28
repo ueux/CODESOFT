@@ -142,7 +142,7 @@ const statuses = [
   </div>
 
       {order.shippingAddress && (
-    <div className="mb-6 text-sm text-gray-300">
+    <div className="mb-6 text-sm text-gray-900">
       <h2 className="text-md font-semibold mb-2">Shipping Address</h2>
       <p>{order.shippingAddress.name}</p>
       <p>

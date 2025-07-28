@@ -12,6 +12,8 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 import useRequireAuth from "apps/user-ui/src/hooks/useRequiredAuth";
+import useLayout from "apps/user-ui/src/hooks/useLayout";
+import Image from "next/image";
 
 const Header = () => {
   const { user, isLoading } = useUser();
@@ -23,6 +25,7 @@ const Header = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
   const router = useRouter();
+  const {layout}=useLayout()
 
   // Search products function
   const handleSearch = async (e?: React.FormEvent) => {
@@ -87,9 +90,10 @@ const Header = () => {
         {/* Logo */}
         <div className="flex-shrink-0">
           <Link href="/">
-            <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">
+            {layout?.logo? <Image src={layout.logo} width={300} height={100} alt="" className="h-[70px] ml-[-50px] mb-[-30px] object-cover"/>
+            :<span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">
               E-Com
-            </span>
+            </span>}
           </Link>
         </div>
 

@@ -1,5 +1,5 @@
 import express,{ Router } from "express";
-import { addNewAdmin, getAllAdmins, getAllCustomizations, getAllEvents, getAllProducts, getAllSellers, getAllUsers } from "../controllers/admin.controllers";
+import { addNewAdmin, adminNotifications, getAllAdmins, getAllCustomizations, getAllEvents, getAllProducts, getAllSellers, getAllUsers, userNotifications } from "../controllers/admin.controllers";
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 import { isAdmin } from "@packages/middleware/authorizeRole";
 
@@ -12,5 +12,8 @@ router.put("/add-new-admin",isAuthenticated,isAdmin ,addNewAdmin)
 router.get("/get-all-users",isAuthenticated,isAdmin ,getAllUsers)
 router.get("/get-all-sellers",isAuthenticated,isAdmin ,getAllSellers)
 router.get("/get-all" ,getAllCustomizations)
+
+router.get("/admin-notifications", isAuthenticated,isAdmin, adminNotifications);
+router.get("/user-notifications", isAuthenticated, userNotifications);
 
 export default router

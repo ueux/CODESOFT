@@ -214,3 +214,43 @@ export const getAllSellers=async (req:Request,res:Response,next:NextFunction)=> 
         return next(error)
     }
 }
+
+export const adminNotifications = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const notifications = await prisma.notifications.findMany(({
+      where: {
+        receiverId:"admin"
+      },
+      orderBy: {
+        createdAt:"desc"
+      }
+    }))
+    res.status(200).json({
+      success: true,
+      notifications
+    })
+  } catch (error) {
+    return next(error)
+  }
+}
+
+export const userNotifications = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user.id
+    const notifications = await prisma.notifications.findMany(({
+      where: {
+        receiverId:userId
+      },
+      orderBy: {
+        createdAt:"desc"
+      }
+    }))
+    res.status(200).json({
+      success: true,
+      notifications
+    })
+  } catch (error) {
+    return next(error)
+  }
+}
+

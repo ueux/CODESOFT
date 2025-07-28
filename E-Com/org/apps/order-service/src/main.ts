@@ -17,6 +17,7 @@ app.use(cors({
 
 app.post("/api/create-order", bodyParser.raw({ type: "application/json" }),
   (req, res, next) => {
+    console.log(req);
     (req as any).rawBody =  req.body.toString('utf8');
     next()
   },

@@ -30,6 +30,7 @@ import ShippingAddressSeciton from "apps/user-ui/src/shared/components/profile-c
 import OrdersTable from "apps/user-ui/src/shared/components/profile-content/orders-table";
 import ChangePassword from "apps/user-ui/src/shared/components/profile-content/change-password";
 import useRequireAuth from "apps/user-ui/src/hooks/useRequiredAuth";
+import Notifications from "apps/user-ui/src/shared/components/profile-content/notifications";
 
 const NavItem = ({
   label,
@@ -178,6 +179,7 @@ const Page = () => {
                   activeTab === "Shipping Address" ? (<ShippingAddressSeciton />) :
                     activeTab === "My Orders" ? (<OrdersTable/>) :
                       activeTab==="Change Password"?(<ChangePassword/>):
+                      activeTab==="Notifications"?(<Notifications/>):
                                       (<>{activeTab} content</>
 
             )}

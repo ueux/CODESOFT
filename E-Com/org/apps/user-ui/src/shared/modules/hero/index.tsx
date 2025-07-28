@@ -1,4 +1,5 @@
 'use client'
+import useLayout from 'apps/user-ui/src/hooks/useLayout'
 import { MoveRight } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -7,7 +8,7 @@ import React, { useEffect, useState } from 'react'
 const Hero = () => {
     const router = useRouter()
     const [isMounted, setIsMounted] = useState(false)
-
+    const {layout} = useLayout()
     useEffect(() => {
         setIsMounted(true)
     }, [])
@@ -48,7 +49,7 @@ const Hero = () => {
                     {/* Image */}
                     <div className={`relative h-full w-full transition-all duration-700 ease-out ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                         <Image
-                            src="https://ik.imagekit.io/Ueux/products/azuredragonscape.png"
+                            src={layout?.banner||"https://ik.imagekit.io/Ueux/products/azuredragonscape.png"}
                             alt="Premium watch collection 2025"
                             width={600}
                             height={600}

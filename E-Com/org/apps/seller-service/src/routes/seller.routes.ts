@@ -10,9 +10,12 @@ import {
   getSellerReviews,
   trackShopVisit,
   getSellerFollowers,
-  getSellerAnalytics
+  getSellerAnalytics,
+  sellerNotifications,
+  markNotificationAsRead
 } from "../controllers/seller.controller";
 import isAuthenticated from "@packages/middleware/isAuthenticated";
+import { isSeller } from "@packages/middleware/authorizeRole";
 
 const router: Router = express.Router();
 
@@ -29,7 +32,9 @@ router.get("/is-following/:shopId", isAuthenticated, isFollowingShop);
 router.post("/track-shop-visit", isAuthenticated, trackShopVisit);
 
 // Seller analytics (admin/seller only)
-router.get("/get-followers/:shopId", isAuthenticated, getSellerFollowers);
-router.get("/get-analytics/:shopId", isAuthenticated, getSellerAnalytics);
+router.get("/get-followers/:shopId", isAuthenticated,isSeller, getSellerFollowers);
+router.get("/get-analytics/:shopId", isAuthenticated,isSeller, getSellerAnalytics);
 
+router.post("/mark-notification-as-read", isAuthenticated, markNotificationAsRead);
+router.get("/seller-notifications", isAuthenticated, isSeller,sellerNotifications);
 export default router;

@@ -18,6 +18,6 @@ app.use("/api",router)
 
 const port = process.env.PORT || 6003;
 const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+  console.log(`[Seller Service Running... ]Listening at http://localhost:${port}/api`);
 });
 server.on('error', console.error);
