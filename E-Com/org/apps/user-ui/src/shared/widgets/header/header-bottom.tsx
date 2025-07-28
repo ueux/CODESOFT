@@ -31,7 +31,7 @@ const HeaderBottom = () => {
     <div className={`w-full ${isSticky ? "fixed top-0 left-0 z-50 bg-white shadow-md" : "relative"} transition-all duration-300 py-1`}>
       <div className={`max-w-7xl mx-auto px-6 flex items-center justify-between ${isSticky ? "py-2" : "py-0"}`}>
         {/* All Departments Dropdown */}
-        <div className="relative">
+        <div className="relative lg:hidden">
           <button
             onClick={() => setShow(!show)}
             className={`flex items-center gap-3 px-5 py-3 rounded-lg ${
@@ -39,10 +39,18 @@ const HeaderBottom = () => {
             } text-white font-medium transition-colors duration-200`}
           >
             <AlignLeft size={20} />
-            <span>All Departments</span>
-            <ChevronDown size={18} className={`transition-transform ${show ? "rotate-180" : ""}`} />
           </button>
-          {show&&(<></>)}
+          {show && (
+            <div className="absolute top-full left-0 w-64 bg-white shadow-lg z-40 rounded-lg mt-2 border lg:hidden">
+              <ul className="divide-y divide-gray-100">
+                <li className="px-4 py-3 hover:bg-gray-100 cursor-pointer">Home</li>
+                <li className="px-4 py-3 hover:bg-gray-100 cursor-pointer">Products</li>
+                <li className="px-4 py-3 hover:bg-gray-100 cursor-pointer">Shops</li>
+                <li className="px-4 py-3 hover:bg-gray-100 cursor-pointer">Offers</li>
+                <li className="px-4 py-3 hover:bg-gray-100 cursor-pointer">Become A Seller</li>
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Navigation Links */}

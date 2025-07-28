@@ -170,7 +170,7 @@ const OrderDetailsPOage = () => {
 
     <p>
       <span className="font-semibold">Date: </span>{" "}
-      {new Date(order.createAt).toLocaleDateString()}
+      {new Date(order.createdAt).toLocaleDateString()}
     </p>
   </div>
 

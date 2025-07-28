@@ -14,7 +14,7 @@ import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 import useRequireAuth from "apps/user-ui/src/hooks/useRequiredAuth";
 
 const Header = () => {
-  const { user, isLoading } = useRequireAuth();
+  const { user, isLoading } = useUser();
   const wishlist = useStore((state: any) => state.wishlist);
   const cart = useStore((state: any) => state.cart);
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,8 +111,7 @@ const Header = () => {
             >
               {isSearching ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              ) : (
-                <Search color="#fff" size={20} />
+              ) : (<></>
               )}
             </button>
           </form>

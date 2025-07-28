@@ -45,6 +45,8 @@ model users {
 
   notifications notifications[] @relation("NotificationCreator")
   role          roles           @default(user)
+
+  followings followers[]
 }
 
 model shopsReviews {
@@ -55,7 +57,7 @@ model shopsReviews {
   review    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      users    @relation(fields: [userId], references: [id])
+  user      users?    @relation(fields: [userId], references: [id])
   shops     shops?   @relation(fields: [shopId], references: [id])
 }
 
@@ -199,6 +201,8 @@ model followers {
 
   // Relations
   Shops shops @relation(fields: [shopId], references: [id])
+  users users @relation(fields: [userId], references: [id])
+
 }
 
 enum DeliveryStatus {
