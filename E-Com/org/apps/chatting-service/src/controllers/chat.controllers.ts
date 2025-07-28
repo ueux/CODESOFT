@@ -255,7 +255,7 @@ export const fetchMessages = async (req: any, res: Response, next: NextFunction)
 
 export const fetchSellerMessages = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const sellerId = req.user.id
+        const sellerId = req.seller.id
         const { conversationId } = req.params
         const page = parseInt(req.query.page as string) || 1
         const pageSize = 10
