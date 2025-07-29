@@ -12,8 +12,8 @@ const Page = () => {
   const { data: products, isLoading, isError } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/product/api/get-all-products?page=1&limit=10")
-      return res.data.products
+      const res = await axiosInstance.get("/recommendation/api/get-recommendation-products")
+      return res.data.recommendations
     },
     staleTime: 1000 * 60 * 2
   })

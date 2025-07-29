@@ -323,11 +323,7 @@ const Page = () => {
                             }`}>
                               {chat.seller.name}
                             </span>
-                            {chat.lastMessage && (
-                              <span className="text-xs text-gray-400 whitespace-nowrap">
-                                {new Date(chat.lastMessage).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            )}
+                            
                           </div>
                           <div className="flex items-center justify-between mt-1">
                             <p className={`text-xs truncate max-w-[160px] ${

@@ -25,7 +25,7 @@ router.delete("/delete-address/:addressId", isAuthenticated, deleteUserAddress)
 router.post("/change-password", isAuthenticated, updateUserPassword)
 router.post("/login-admin", loginAdmin);
 router.get("/logged-in-admin", isAuthenticated,getAdmin)
-router.get("get-layouts",getLayoutData)
+router.get("/get-layouts",getLayoutData)
 
 
 export default router;
